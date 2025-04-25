@@ -1,0 +1,9 @@
+#generated code from proto files
+nameserver/proto
+
+#executable
+nsclient
+
+#emacs
+*~
+\#*\#
