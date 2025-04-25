@@ -1,0 +1,31 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "proto";
+option go_package = "nameserver/proto";
+
+message Role {
+    string name = 1;
+    optional string description = 2;
+}
+
+message CreateRoleRequest {
+    Role role = 1;
+}
+
+message UpdateRoleRequest {
+    Role role = 1;
+}
+
+message DeleteRoleRequest {
+    string name = 1;
+}
+
+message RoleResponse {
+    Role role = 1;
+}
+
+message RoleListResponse {
+    repeated Role roles = 1;
+}
+
+

@@ -1,0 +1,66 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "proto";
+option go_package = "nameserver/proto";
+
+import "google/protobuf/empty.proto";
+import "location_type.proto";
+import "location.proto";
+import "node.proto";
+import "alarm_type.proto";
+import "role.proto";
+import "device.proto";
+import "channel.proto";
+
+service NameService {
+    rpc CreateLocation(CreateLocationRequest) returns (LocationResponse);
+    rpc GetLocation(GetLocationRequest) returns (LocationResponse);    
+    rpc ListLocations(ListLocationsRequest) returns (LocationListResponse);    
+    rpc DeleteLocation(DeleteLocationRequest) returns (google.protobuf.Empty);
+    rpc UpdateLocation(UpdateLocationRequest) returns (LocationResponse);
+
+    rpc CreateNode(CreateNodeRequest) returns (NodeResponse);
+    rpc GetNode(GetNodeRequest) returns (NodeResponse);
+    rpc ListNodes(ListNodesRequest) returns (NodeListResponse);
+    rpc DeleteNode(DeleteNodeRequest) returns (google.protobuf.Empty);
+    rpc UpdateNode(UpdateNodeRequest) returns (NodeResponse);
+
+    rpc CreateDevice(CreateDeviceRequest) returns (DeviceResponse);
+    rpc GetDevice(GetDeviceRequest) returns (DeviceResponse);
+    rpc ListDevices(ListDevicesRequest) returns (DeviceListResponse);
+    rpc DeleteDevice(DeleteDeviceRequest) returns (google.protobuf.Empty);
+    rpc UpdateDevice(UpdateDeviceRequest) returns (DeviceResponse);
+    
+    rpc CreateChannel(CreateChannelRequest) returns (ChannelResponse);
+    rpc GetChannel(GetChannelRequest) returns (ChannelResponse);
+    rpc ListChannels(ListChannelsRequest) returns (ChannelListResponse);
+    rpc DeleteChannel(DeleteChannelRequest) returns (google.protobuf.Empty);
+    rpc UpdateChannel(UpdateChannelRequest) returns (ChannelResponse);
+    
+    rpc AddChannelTransform(AddChannelTransformRequest) returns (ChannelTransformResponse);
+    rpc DeleteChannelTransform(DeleteChannelTransformRequest) returns (google.protobuf.Empty);
+    rpc UpdateChannelTransform(UpdateChannelTransformRequest) returns (ChannelTransformResponse);
+    
+    rpc AddChannelAlarm(AddChannelAlarmRequest) returns (ChannelAlarmResponse);
+    rpc DeleteChannelAlarm(DeleteChannelAlarmRequest) returns (google.protobuf.Empty);
+    rpc UpdateChannelAlarm(UpdateChannelAlarmRequest) returns (ChannelAlarmResponse);
+    
+    rpc AddChannelAccessControl(AddChannelAccessControlRequest) returns (ChannelAccessControlResponse);
+    rpc DeleteChannelAccessControl(DeleteChannelAccessControlRequest) returns (google.protobuf.Empty);
+    rpc UpdateChannelAccessControl(UpdateChannelAccessControlRequest) returns (ChannelAccessControlResponse);
+
+    rpc CreateLocationType(CreateLocationTypeRequest) returns (LocationTypeResponse);
+    rpc ListLocationTypes(google.protobuf.Empty) returns (LocationTypeListResponse);
+    rpc DeleteLocationType(DeleteLocationTypeRequest) returns (google.protobuf.Empty);
+    rpc UpdateLocationType(UpdateLocationTypeRequest) returns (LocationTypeResponse);    
+
+    rpc CreateAlarmType(CreateAlarmTypeRequest) returns (AlarmTypeResponse);
+    rpc ListAlarmTypes(google.protobuf.Empty) returns (AlarmTypeListResponse);
+    rpc DeleteAlarmType(DeleteAlarmTypeRequest) returns (google.protobuf.Empty);
+    rpc UpdateAlarmType(UpdateAlarmTypeRequest) returns (AlarmTypeResponse);
+
+    rpc CreateRole(CreateRoleRequest) returns (RoleResponse);
+    rpc ListRoles(google.protobuf.Empty) returns (RoleListResponse);
+    rpc DeleteRole(DeleteRoleRequest) returns (google.protobuf.Empty);
+    rpc UpdateRole(UpdateRoleRequest) returns (RoleResponse);    
+}

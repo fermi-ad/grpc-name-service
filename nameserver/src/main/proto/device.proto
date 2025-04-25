@@ -1,0 +1,42 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "proto";
+option go_package = "nameserver/proto";
+
+import "pagination.proto";
+
+message Device {
+    string name = 1;
+    optional string description = 2;    
+    string node_hostname = 3;
+}
+
+message CreateDeviceRequest {
+    Device device = 1;
+}
+message DeviceResponse {
+    Device device = 1;
+}
+
+message DeviceListResponse {
+    repeated Device devices = 1;
+    PaginationResponse pagination = 2;
+}
+
+message GetDeviceRequest {
+    string name = 1;
+}
+
+message ListDevicesRequest {
+    optional string name = 1;
+    optional string node_hostname = 2;    
+    optional PaginationRequest pagination = 3;
+}
+
+message UpdateDeviceRequest { 
+    Device device = 1;
+}
+
+message DeleteDeviceRequest {
+    string name = 1;
+}

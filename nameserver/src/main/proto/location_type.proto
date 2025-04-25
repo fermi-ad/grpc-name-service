@@ -1,0 +1,31 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "proto";
+option go_package = "nameserver/proto";
+
+message LocationType {
+    string name = 1;
+    optional string description = 2;
+}
+
+message CreateLocationTypeRequest {
+    LocationType location_type = 1;
+}
+
+message UpdateLocationTypeRequest {
+    LocationType location_type = 1;
+}
+
+message DeleteLocationTypeRequest {
+    string name = 1;
+}
+
+message LocationTypeResponse {
+    LocationType location_type = 1;
+}
+
+message LocationTypeListResponse {
+    repeated LocationType location_types = 1;
+}
+
+

@@ -1,0 +1,31 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "proto";
+option go_package = "nameserver/proto";
+
+message AlarmType {
+    string name = 1;
+    optional string description = 2;
+}
+
+message CreateAlarmTypeRequest {
+    AlarmType alarm_type = 1;
+}
+
+message UpdateAlarmTypeRequest {
+    AlarmType alarm_type = 1;
+}
+
+message DeleteAlarmTypeRequest {
+    string name = 1;
+}
+
+message AlarmTypeResponse {
+    AlarmType alarm_type = 1;
+}
+
+message AlarmTypeListResponse {
+    repeated AlarmType alarm_types = 1;
+}
+
+
