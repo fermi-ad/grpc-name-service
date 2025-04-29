@@ -46,9 +46,10 @@ func init() {
 	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().String("name", "", "Name of the object")
 	//default to HTTPS port
-	rootCmd.PersistentFlags().String("addr", "localhost:8443", "gRPC server address")
+	rootCmd.PersistentFlags().String("addr", "", "gRPC server address")
+	rootCmd.PersistentFlags().String("ssl-cert", "", "SSL Certificate")
 	rootCmd.PersistentFlags().Bool("no-tls", false, "Turn off tls")
-	rootCmd.PersistentFlags().Bool("no-authnz", false, "Turn off autnhentication and authorization")
+	rootCmd.PersistentFlags().Bool("no-authnz", false, "Turn off authentication and authorization")
 	rootCmd.PersistentFlags().String("keycloak-url", "", "Keycloak URL")
 	rootCmd.PersistentFlags().String("user", "alice", "User")
 	rootCmd.PersistentFlags().String("password", "alice", "Password")

@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-@Table(name = "channel_alarm", uniqueConstraints = { @UniqueConstraint(columnNames = {"alarm_type_id", "channel_id" }) })  
+@Table(uniqueConstraints = { @UniqueConstraint(columnNames = {"alarm_type_id", "channel_id" }) })  
 @Entity
 public class ChannelAlarm extends PanacheEntity {
     @NotBlank
