@@ -3,12 +3,12 @@ values (nextval('alarmtype_SEQ'), 'Major', 'Major severity');
 insert into alarmtype (id, name, description) 
 values (nextval('alarmtype_SEQ'), 'Minor', 'Minor severity');
 
-insert into location_type (id, name, description) 
-values (nextval('location_type_SEQ'), 'Building', 'Building location');
-insert into location_type (id, name, description) 
-values (nextval('location_type_SEQ'), 'Area', 'Area location');
-insert into location_type (id, name, description) 
-values (nextval('location_type_SEQ'), 'Rack', 'Rack location');
+insert into locationtype (id, name, description) 
+values (nextval('locationtype_SEQ'), 'Building', 'Building location');
+insert into locationtype (id, name, description) 
+values (nextval('locationtype_SEQ'), 'Area', 'Area location');
+insert into locationtype (id, name, description) 
+values (nextval('locationtype_SEQ'), 'Rack', 'Rack location');
 
 insert into location (id, name, description, location_type_id) 
 values (nextval('location_SEQ'), 'Building A', 'Building A description', 1);

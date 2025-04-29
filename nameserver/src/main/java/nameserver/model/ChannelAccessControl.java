@@ -9,7 +9,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "channel_access_control")
 public class ChannelAccessControl extends PanacheEntity {
     @ManyToOne(optional = false)
     @JoinColumn(name = "channel_id")

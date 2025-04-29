@@ -8,7 +8,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.persistence.Table;
 
-@Table(name = "channel_transform")
 @Entity
 public class ChannelTransform extends PanacheEntity {
     @NotBlank

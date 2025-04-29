@@ -7,7 +7,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
-@Table(name = "location_type")
 public class LocationType extends PanacheEntity {
 
     public String getName() {
