@@ -1,6 +1,10 @@
 #!/bin/bash
 
-TOP=../../
+function usage() {
+    echo "$0 <protopath>"
+}
+
+TOP=..    
 protodir=$TOP/nameserver/src/main/proto
 targetdir=.
 PROTOFILES=`ls $protodir/*.proto`

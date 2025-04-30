@@ -1,8 +1,32 @@
-# acorn-nameserver
+# Acorn Nameserver prototype
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Name server serves as a single, reliable source for EPICS and ACNET control system component information such as device definitions, property configurations, and associated metadata.
+
+
+## Background
+ - Requirements
+ - Data model design
+
+## Features
+
+This prototype does the following:
+- Hosts component information about the control system devices (see data model design document for more detail), including nodes, locations, alarm and access control properties, etc...
+- Uses secure gRPC as the protocol for service-to-service communication
+- Uses PostgreSQL for storage
+- Uses OIDC RBAC with HTTPS/gRPC for authentication and authorization that integrates with Keycloak
+- Database schema version control and automated database deployments using Flyway 
+
+## Implementation
+
+This project uses Quarkus, a Java framework geared towards building Kubernetes native Java applications.
+
+Due to this fact, using this framework makes it easy to add on common performance optimizations, implement common protocols, and integrate with other common services.
 
 If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+
+## Prerequisites
+
+
 
 ## Running the application in dev mode
 
@@ -11,6 +35,8 @@ You can run your application in dev mode that enables live coding using:
 ```shell script
 ./mvnw quarkus:dev
 ```
+
+
 
 > **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
 

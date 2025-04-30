@@ -1,0 +1,7 @@
+FROM quay.io/keycloak/keycloak:26.0.7
+
+COPY quarkus-realm.json /opt/keycloak/data/import/realm-export.json
+
+CMD ["start-dev", "--import-realm"]
+
+
