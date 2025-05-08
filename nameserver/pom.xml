@@ -66,6 +66,13 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-health</artifactId>
         </dependency>
+<!-- 
+disable Flyway to automatically update databaseh with schema changes from
+namserver.model Java classes.  Once nameserver is deployed in production, 
+you can turn on Flyway to create the initial SQL and to manage schema changes with
+external database
+-->
+<!--	
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-flyway</artifactId>
@@ -74,7 +81,7 @@
         <groupId>org.flywaydb</groupId>
         <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
-
+-->
 
         <dependency>
             <groupId>io.quarkus</groupId>

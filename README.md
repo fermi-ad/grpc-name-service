@@ -22,23 +22,36 @@ This project uses Quarkus, a Java framework geared towards building Kubernetes n
 
 Due to this fact, using this framework makes it easy to add on common performance optimizations, implement common protocols, and integrate with other common services.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+For more information, go to [quarkus.io](https://quarkus.io/)
 
 ## Prerequisites
+For prerequisites for Quarkus, refer to the prerequisite lists in the [Creating your first application](https://quarkus.io/guides/getting-started) and [Your second Quarkus application](https://quarkus.io/guides/getting-started-dev-services) tutorials. Specifically, the following need to be installed:
+- JDK 17+ installed with JAVA_HOME configured appropriately
+- Apache Maven 3.9.9
+- A working container runtime (Docker or [Podman](https://quarkus.io/guides/podman))
 
+Recommended OS is Linux.
 
+**_NOTE:_** Application was tested using Podman.  As such, instructions below use Podman.  To use Docker, replace `podman` with `docker`
 
 ## Running the application in dev mode
 
-You can run your application in dev mode that enables live coding using:
+You can run your application in dev mode by running:
 
 ```shell script
 ./mvnw quarkus:dev
 ```
 
+This mode will allow live editing, and automatically starts containerized Postgres and Keycloak services for testing.  The server will by default listen from port 8443. The URL and port it's listening on will be printed on the console with a message like this:
+
+``shell 
+acorn-nameserver 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.18.3) started in 32.681s. Listening on: https://0.0.0.0:8443
+```
+
+If TLS is disabled, the default port will change to 8080.
 
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8443/q/dev/>.
 
 ## Packaging and running the application
 
