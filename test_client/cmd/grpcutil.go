@@ -186,14 +186,11 @@ func (c *PasswordGrantClient) GetToken(ctx context.Context) (string, error) {
 	// Store the token
 	c.token = result.AccessToken
 	c.tokenExpiry = time.Now().Add(time.Duration(result.ExpiresIn-30) * time.Second)
-	log.Printf("Token: %s, expires in: %d seconds", c.token, result.ExpiresIn)
-
-	debugToken(c.token)
 
 	return c.token, nil
 }
 
-func debugToken(token string) {
+func DebugToken(token string) {
 	// Parse the token without verification (just for debugging)
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
@@ -212,37 +209,8 @@ func debugToken(token string) {
 		log.Fatalf("failed to format token payload: %w", err)
 	}
 
-	fmt.Println("Token payload:")
+	fmt.Println("JWT Token payload:")
 	fmt.Println(prettyJSON.String())
-
-	// Check for roles
-	var claims map[string]interface{}
-	if err := json.Unmarshal(payload, &claims); err != nil {
-		log.Fatalf("failed to parse token claims: %w", err)
-	}
-
-	// Check realm roles
-	if realmAccess, ok := claims["realm_access"].(map[string]interface{}); ok {
-		if roles, ok := realmAccess["roles"].([]interface{}); ok {
-			fmt.Println("Realm roles:")
-			for _, role := range roles {
-				fmt.Printf("- %s\n", role)
-			}
-		}
-	} else {
-		fmt.Println("No realm roles found in token")
-	}
-
-	// Check groups claim (MicroProfile JWT format)
-	if groups, ok := claims["groups"].([]interface{}); ok {
-		fmt.Println("Groups/Roles (MicroProfile JWT format):")
-		for _, group := range groups {
-			fmt.Printf("- %s\n", group)
-		}
-	} else {
-		fmt.Println("No groups claim found in token")
-	}
-
 }
 
 func createGrpcConn(cmd *cobra.Command) *grpc.ClientConn {
@@ -251,8 +219,15 @@ func createGrpcConn(cmd *cobra.Command) *grpc.ClientConn {
 
 	var creds credentials.TransportCredentials
 
+	if addr == "" {
+		addr = "localhost"
+		if noTls {
+			addr += ":8080"
+		} else {
+			addr += ":8443"
+		}
+	}
 	if noTls {
-		log.Printf("Connect without TLS")
 		creds = insecure.NewCredentials()
 	} else {
 		tlsPath := cmd.Flag("ssl-cert").Value.String()
@@ -271,6 +246,8 @@ func createGrpcConn(cmd *cobra.Command) *grpc.ClientConn {
 
 		creds = credentials.NewTLS(tlscfg)
 	}
+	log.Printf("Connecting to %s", addr)
+
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(creds))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -292,10 +269,13 @@ func CreateClientContext(cmd *cobra.Command) ClientContext {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 
 	noAuth, _ := cmd.Flags().GetBool("no-authnz")
-
+	verbose, _ := cmd.Flags().GetBool("verbose")
 	if !noAuth {
 		authClient := NewPasswordGrantClient(cmd)
 		token, err := authClient.GetToken(ctx)
+		if verbose {
+			DebugToken(token)
+		}
 		if err != nil {
 			log.Fatalf("Failed to get token: %v", err)
 		}

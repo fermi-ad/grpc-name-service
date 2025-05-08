@@ -21,10 +21,7 @@ public class ControllerUtil {
             paramId++;
         }        
         String queryString = String.join(" and ", querys);
-
-        System.out.println("queryString: " + queryString);
-        System.out.println("parameters: " + parameters.toString());
-
+        
         //return all entries if not parameters specified by specifying a condition that's always true
         if (queryString.isEmpty()) {
             queryString = "1=1";

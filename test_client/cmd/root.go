@@ -12,14 +12,8 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "nsclient",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Args: cobra.MinimumNArgs(1),
+	Short: "Test client for the ACORN Name Server",
+	Args:  cobra.MinimumNArgs(1),
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -44,15 +38,14 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	rootCmd.PersistentFlags().String("name", "", "Name of the object")
-	//default to HTTPS port
-	rootCmd.PersistentFlags().String("addr", "", "gRPC server address")
-	rootCmd.PersistentFlags().String("ssl-cert", "", "SSL Certificate")
+	rootCmd.PersistentFlags().String("addr", "", "gRPC server address. Defaults to localhost:8443 or localhost:8080 if --no-tls is set")
+	rootCmd.PersistentFlags().String("ssl-cert", "../nameserver/src/main/resources/ssl/server.crt", "SSL Certificate")
 	rootCmd.PersistentFlags().Bool("no-tls", false, "Turn off tls")
 	rootCmd.PersistentFlags().Bool("no-authnz", false, "Turn off authentication and authorization")
-	rootCmd.PersistentFlags().String("keycloak-url", "", "Keycloak URL")
+	rootCmd.PersistentFlags().String("keycloak-url", "", "Keycloak URL. For example: http://localhost:39507")
 	rootCmd.PersistentFlags().String("user", "alice", "User")
 	rootCmd.PersistentFlags().String("password", "alice", "Password")
 	rootCmd.PersistentFlags().String("json", "", "JSON input")
 	rootCmd.PersistentFlags().Bool("json-template", false, "Create JSON template")
+	rootCmd.PersistentFlags().Bool("verbose", false, "Print debug output")
 }

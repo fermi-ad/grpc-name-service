@@ -247,8 +247,8 @@ func printCreateJsonTemplate(noun NsType) {
 // createCmd represents the create command
 var createCmd = &cobra.Command{
 	Use:   "create [noun]",
-	Short: "creates a new object",
-	Long:  `Creates a new object of one of the following types:` + SupportedNsTypeString(),
+	Short: "creates a new resource",
+	Long:  `Creates a new resource of one of the following types:` + SupportedNsTypeString(),
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var createFunctions = map[NsType]func(*ClientContext, *cobra.Command) error{

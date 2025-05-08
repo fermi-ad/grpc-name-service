@@ -40,11 +40,12 @@ var listCmd = &cobra.Command{
 			printListJsonTemplate(noun)
 			return
 		}
-		json, _ := cmd.Flags().GetString("json")
-		if json == "" {
-			log.Fatalf("JSON is required")
-			return
+
+		jsonstr, _ := cmd.Flags().GetString("json")
+		if jsonstr == "" {
+			cmd.Flags().Set("json", "{}")
 		}
+
 		lfunc, ok := lfunctions[noun]
 		if !ok {
 			log.Fatalf("Listing %s is not supported", args[0])
