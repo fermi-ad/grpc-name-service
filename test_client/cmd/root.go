@@ -53,4 +53,6 @@ func init() {
 	rootCmd.PersistentFlags().String("keycloak-url", "", "Keycloak URL")
 	rootCmd.PersistentFlags().String("user", "alice", "User")
 	rootCmd.PersistentFlags().String("password", "alice", "Password")
+	rootCmd.PersistentFlags().String("json", "", "JSON input")
+	rootCmd.PersistentFlags().Bool("json-template", false, "Create JSON template")
 }

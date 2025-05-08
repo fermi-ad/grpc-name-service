@@ -24,6 +24,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
 )
 
 type NsType int64
@@ -253,7 +255,11 @@ func createGrpcConn(cmd *cobra.Command) *grpc.ClientConn {
 		log.Printf("Connect without TLS")
 		creds = insecure.NewCredentials()
 	} else {
-		cacert, err := os.ReadFile("../tls/server.crt")
+		tlsPath := cmd.Flag("ssl-cert").Value.String()
+		if tlsPath == "" {
+			log.Fatalf("SSL certificate path is required")
+		}
+		cacert, err := os.ReadFile(tlsPath)
 		if err != nil {
 			log.Fatalf("Failed to load CA cert: %v", err)
 		}
@@ -279,6 +285,9 @@ type ClientContext struct {
 	cancel  context.CancelFunc
 }
 
+// Given the command-line arguments "cmd", authenicates user,
+// creates a Context object with authorization Bearer token attached, and
+// creates a gRPC connection to the server.
 func CreateClientContext(cmd *cobra.Command) ClientContext {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 
@@ -296,6 +305,25 @@ func CreateClientContext(cmd *cobra.Command) ClientContext {
 	c := pb.NewNameServiceClient(conn)
 	return ClientContext{conn, c, ctx, cancel}
 }
+
+// decodes JSON string to a proto buffer message object
+func DecodeJSONToProto(jsonStr string, protoMsg proto.Message) error {
+	err := protojson.Unmarshal([]byte(jsonStr), protoMsg)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal JSON: %w", err)
+	}
+	return nil
+}
+
+// encode proto buffer message object to JSON string
+func PrintProtoAsJSON(protoMsg proto.Message) {
+	jsonData, err := protojson.Marshal(protoMsg)
+	if err != nil {
+		log.Fatalf("Failed to marshal proto message to JSON: %v", err)
+	}
+	fmt.Println(string(jsonData))
+}
+
 func currentTime() string {
 	return time.Now().Format(time.RFC3339)
 }

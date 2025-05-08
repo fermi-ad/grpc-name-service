@@ -4,11 +4,9 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	pb "nsclient/nameserver/proto"
-	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -21,7 +19,7 @@ var updateCmd = &cobra.Command{
 	` + SupportedNsTypeString(),
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		var functions = map[NsType]func(*ClientContext, string, *cobra.Command) error{
+		var functions = map[NsType]func(*ClientContext, *cobra.Command) error{
 
 			LocationType: ulocationTypeFunc,
 			Location:     ulocationFunc,
@@ -38,9 +36,14 @@ var updateCmd = &cobra.Command{
 			log.Fatalf("Unknown noun: %s", args[0])
 			return
 		}
-		name, _ := cmd.Flags().GetString("name")
-		if name == "" {
-			log.Fatalf("Name is required")
+		json_template, _ := cmd.Flags().GetBool("json-template")
+		if json_template {
+			printUpdateJsonTemplate(noun)
+			return
+		}
+		json, _ := cmd.Flags().GetString("json")
+		if json == "" {
+			log.Fatalf("JSON is required")
 			return
 		}
 
@@ -53,20 +56,24 @@ var updateCmd = &cobra.Command{
 		defer cctx.conn.Close()
 		defer cctx.cancel()
 
-		err := ufunc(&cctx, name, cmd)
+		err := ufunc(&cctx, cmd)
 		if err != nil {
 			log.Fatalf("Failed to update %s: %v", args[0], err)
 		}
-		fmt.Printf("Updated %s: %s\n", args[0], name)
+		fmt.Printf("Updated %s\n", args[0])
 	},
 }
 
-func ulocationTypeFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
+func ulocationTypeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
 
-	desc := "Updated at " + currentTime()
-	locationType := pb.LocationType{Name: name, Description: &desc}
+	var locationType pb.LocationType
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &locationType); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+
 	r, err := client.UpdateLocationType(ctx, &pb.UpdateLocationTypeRequest{LocationType: &locationType})
 	if err == nil {
 		log.Printf("Updated location type: %v", r.GetLocationType())
@@ -74,12 +81,16 @@ func ulocationTypeFunc(cctx *ClientContext, name string, cmd *cobra.Command) err
 	return err
 }
 
-func ulocationFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
+func ulocationFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
 
-	desc := "Updated at " + currentTime()
-	location := pb.Location{Name: name, Description: &desc}
+	var location pb.Location
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &location); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+
 	r, err := client.UpdateLocation(ctx, &pb.UpdateLocationRequest{Location: &location})
 	if err == nil {
 		log.Printf("Updated location: %v", r.GetLocation())
@@ -87,12 +98,16 @@ func ulocationFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
 	return err
 }
 
-func unodeFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
+func unodeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
 
-	desc := "Updated at " + currentTime()
-	node := pb.Node{Hostname: name, Description: &desc}
+	var node pb.Node
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &node); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+
 	r, err := client.UpdateNode(ctx, &pb.UpdateNodeRequest{Node: &node})
 	if err == nil {
 		log.Printf("Updated node: %v", r.GetNode())
@@ -100,24 +115,32 @@ func unodeFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
 	return err
 }
 
-func udeviceFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
+func udeviceFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
 
-	desc := "Updated at " + currentTime()
-	device := pb.Device{Name: name, Description: &desc}
+	var device pb.Device
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &device); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+
 	r, err := client.UpdateDevice(ctx, &pb.UpdateDeviceRequest{Device: &device})
 	if err == nil {
 		log.Printf("Updated device: %v", r.GetDevice())
 	}
 	return err
 }
-func uchannelFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
+func uchannelFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
 
-	desc := "Updated at " + currentTime()
-	channel := pb.Channel{Name: name, Description: &desc}
+	var channel pb.Channel
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &channel); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+
 	r, err := client.UpdateChannel(ctx, &pb.UpdateChannelRequest{Channel: &channel})
 	if err == nil {
 		log.Printf("Updated channel: %v", r.GetChannel())
@@ -125,12 +148,16 @@ func uchannelFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
 	return err
 }
 
-func uroleFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
+func uroleFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
 
-	desc := "Updated at " + currentTime()
-	role := pb.Role{Name: name, Description: &desc}
+	var role pb.Role
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &role); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+
 	r, err := client.UpdateRole(ctx, &pb.UpdateRoleRequest{Role: &role})
 	if err == nil {
 		log.Printf("Updated role: %v", r.GetRole())
@@ -138,12 +165,16 @@ func uroleFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
 	return err
 }
 
-func ualarmTypeFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
+func ualarmTypeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
 
-	desc := "Updated at " + currentTime()
-	alarmType := pb.AlarmType{Name: name, Description: &desc}
+	var alarmType pb.AlarmType
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &alarmType); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+
 	r, err := client.UpdateAlarmType(ctx, &pb.UpdateAlarmTypeRequest{AlarmType: &alarmType})
 	if err == nil {
 		log.Printf("Updated alarm type: %v", r.GetAlarmType())
@@ -151,25 +182,101 @@ func ualarmTypeFunc(cctx *ClientContext, name string, cmd *cobra.Command) error 
 	return err
 }
 
-func uchannelAlarmFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
+func uchannelAlarmFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
-	channel, _ := cmd.Flags().GetString("parent")
-	if channel == "" {
-		return errors.New("Parent channel is required")
+
+	var channelAlarm pb.UpdateChannelAlarmRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &channelAlarm); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
 	}
-	trigger := ">= " + strconv.Itoa(randomNumber())
-	channel_alarm := pb.ChannelAlarm{Type: name, TriggerCondition: trigger}
-	resp, err := client.AddChannelAlarm(ctx, &pb.AddChannelAlarmRequest{ChannelName: channel, Alarm: &channel_alarm})
+
+	r, err := client.UpdateChannelAlarm(ctx, &channelAlarm)
 	if err == nil {
-		log.Printf("Updated channel alarm: %v", resp.GetAlarm())
+		log.Printf("Updated channel alarm: %v", r.GetAlarm())
 	}
 	return err
 }
 
+func printUpdateJsonTemplate(noun NsType) {
+	optional := "Description"
+	switch noun {
+	case LocationType:
+		PrintProtoAsJSON(
+			&pb.LocationType{
+				Name:        "LocationTypeName",
+				Description: &optional,
+			})
+	case Location:
+		PrintProtoAsJSON(&pb.Location{
+			Name:               "LocationName",
+			Description:        &optional,
+			LocationTypeName:   "LocationTypeName",
+			ParentLocationName: &optional,
+		})
+	case Node:
+		PrintProtoAsJSON(&pb.Node{
+			Hostname:     "NodeHostname",
+			Description:  &optional,
+			IpAddress:    "IPAddress",
+			LocationName: "LocationName",
+		})
+	case Device:
+		PrintProtoAsJSON(&pb.Device{
+			Name:         "DeviceName",
+			Description:  &optional,
+			NodeHostname: "NodeHostname",
+		})
+	case Channel:
+		PrintProtoAsJSON(&pb.Channel{
+			Name:        "ChannelName",
+			Description: &optional,
+			DeviceName:  "DeviceName",
+		})
+	case Role:
+		PrintProtoAsJSON(&pb.Role{
+			Name:        "RoleName",
+			Description: &optional,
+		})
+	case AlarmType:
+		PrintProtoAsJSON(&pb.AlarmType{
+			Name:        "AlarmTypeName",
+			Description: &optional,
+		})
+	case ChannelAlarm:
+		PrintProtoAsJSON(&pb.UpdateChannelAlarmRequest{
+			ChannelName: "ChannelName",
+			Alarm: &pb.ChannelAlarm{
+				Type:             "AlarmType",
+				TriggerCondition: "TriggerCondition",
+			},
+		})
+	case ChannelTransform:
+		PrintProtoAsJSON(&pb.UpdateChannelTransformRequest{
+			ChannelName: "ChannelName",
+			Transform: &pb.ChannelTransform{
+				Name:        "TransformName",
+				Transform:   "TransformData",
+				Description: "Description",
+			},
+		})
+	case ChannelAccess:
+		PrintProtoAsJSON(&pb.UpdateChannelAccessControlRequest{
+			ChannelName: "ChannelName",
+			Accesscontrol: &pb.ChannelAccessControl{
+				Role:  "RoleName",
+				Read:  new(bool), // Set to true or false
+				Write: new(bool), // Set to true or false
+			},
+		})
+	default:
+		log.Fatalf("Unsupported noun for update JSON template: %v", noun)
+	}
+}
+
 func init() {
 	rootCmd.AddCommand(updateCmd)
-	updateCmd.Flags().String("parent", "", "Parent of the object to create")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command

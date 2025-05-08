@@ -4,7 +4,6 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"log"
@@ -21,16 +20,15 @@ var deleteCmd = &cobra.Command{
 	` + SupportedNsTypeString(),
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		var dfunctions = map[NsType]func(*ClientContext, string, *cobra.Command) error{
-			LocationType: dlocationTypeFunc,
-			Location:     dlocationFunc,
-			Node:         dnodeFunc,
-			Device:       ddeviceFunc,
-			Channel:      dchannelFunc,
-			Role:         droleFunc,
-			ChannelAlarm: dchAlarmFunc,
-			// 	ChannelAccess : createChannelAccess,
-			AlarmType: dalarmTypeFunc,
+		var dfunctions = map[NsType]func(*ClientContext, *cobra.Command) error{
+			LocationType: deleteLocationType,
+			Location:     deleteLocation,
+			Node:         deleteNode,
+			Device:       deleteDevice,
+			Channel:      deleteChannel,
+			Role:         deleteRole,
+			ChannelAlarm: deleteChannelAlarm,
+			AlarmType:    deleteAlarmType,
 		}
 
 		noun := StringToNsType(args[0])
@@ -39,9 +37,15 @@ var deleteCmd = &cobra.Command{
 			return
 		}
 
-		name, _ := cmd.Flags().GetString("name")
-		if name == "" {
-			log.Fatalf("Name is required")
+		json_template, _ := cmd.Flags().GetBool("json-template")
+		if json_template {
+			printDeleteJsonTemplate(noun)
+			return
+		}
+
+		json, _ := cmd.Flags().GetString("json")
+		if json == "" {
+			log.Fatalf("JSON is required")
 			return
 		}
 
@@ -55,76 +59,164 @@ var deleteCmd = &cobra.Command{
 		defer cctx.conn.Close()
 		defer cctx.cancel()
 
-		err := dfunc(&cctx, name, cmd)
+		err := dfunc(&cctx, cmd)
 		if err != nil {
 			log.Fatalf("Failed to delete %s: %v", args[0], err)
 		}
-		fmt.Printf("Deleted %s: %s\n", args[0], name)
+		fmt.Printf("Deleted %s\n", args[0])
 	},
 }
 
-func dlocationTypeFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
-	client := cctx.client
-	ctx := cctx.context
-
-	_, err := client.DeleteLocationType(ctx, &pb.DeleteLocationTypeRequest{Name: name})
-	return err
-}
-
-func dlocationFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
-	client := cctx.client
-	ctx := cctx.context
-	_, err := client.DeleteLocation(ctx, &pb.DeleteLocationRequest{Name: name})
-	return err
-}
-
-func dnodeFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
-	client := cctx.client
-	ctx := cctx.context
-
-	_, err := client.DeleteNode(ctx, &pb.DeleteNodeRequest{Hostname: name})
-	return err
-}
-
-func ddeviceFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
-	client := cctx.client
-	ctx := cctx.context
-
-	_, err := client.DeleteDevice(ctx, &pb.DeleteDeviceRequest{Name: name})
-	return err
-}
-
-func dchannelFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
-	client := cctx.client
-	ctx := cctx.context
-
-	_, err := client.DeleteChannel(ctx, &pb.DeleteChannelRequest{Name: name})
-	return err
-}
-
-func dchAlarmFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
-	client := cctx.client
-	ctx := cctx.context
-
-	channel, _ := cmd.Flags().GetString("parent")
-	if channel == "" {
-		return errors.New("Parent (channel) is required for ChannelAlarm")
+func printDeleteJsonTemplate(noun NsType) {
+	switch noun {
+	case LocationType:
+		PrintProtoAsJSON(&pb.DeleteLocationTypeRequest{
+			Name: "LocationTypeName",
+		})
+	case Location:
+		PrintProtoAsJSON(&pb.DeleteLocationRequest{
+			Name: "LocationName",
+		})
+	case Node:
+		PrintProtoAsJSON(&pb.DeleteNodeRequest{
+			Hostname: "NodeHostname",
+		})
+	case Device:
+		PrintProtoAsJSON(&pb.DeleteDeviceRequest{
+			Name: "DeviceName",
+		})
+	case Channel:
+		PrintProtoAsJSON(&pb.DeleteChannelRequest{
+			Name: "ChannelName",
+		})
+	case Role:
+		PrintProtoAsJSON(&pb.DeleteRoleRequest{
+			Name: "RoleName",
+		})
+	case ChannelAlarm:
+		PrintProtoAsJSON(&pb.DeleteChannelAlarmRequest{
+			ChannelName: "ChannelName",
+			AlarmType:   "AlarmType",
+		})
+	case AlarmType:
+		PrintProtoAsJSON(&pb.DeleteAlarmTypeRequest{
+			Name: "AlarmTypeName",
+		})
+	case ChannelTransform:
+		PrintProtoAsJSON(&pb.DeleteChannelTransformRequest{
+			ChannelName:   "ChannelName",
+			TransformName: "TransformName",
+		})
+	case ChannelAccess:
+		PrintProtoAsJSON(&pb.DeleteChannelAccessControlRequest{
+			ChannelName: "ChannelName",
+			Role:        "RoleName",
+		})
+	default:
+		log.Fatalf("Unsupported noun for delete JSON template: %v", noun)
 	}
-	_, err := client.DeleteChannelAlarm(ctx, &pb.DeleteChannelAlarmRequest{AlarmType: name, ChannelName: channel})
-	return err
 }
-
-func droleFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
+func deleteLocationType(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
 
-	_, err := client.DeleteRole(ctx, &pb.DeleteRoleRequest{Name: name})
+	var locationType pb.DeleteLocationTypeRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &locationType); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+	_, err := client.DeleteLocationType(ctx, &locationType)
 	return err
 }
-func dalarmTypeFunc(cctx *ClientContext, name string, cmd *cobra.Command) error {
+
+func deleteLocation(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
-	_, err := client.DeleteAlarmType(ctx, &pb.DeleteAlarmTypeRequest{Name: name})
+
+	var location pb.DeleteLocationRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &location); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+	_, err := client.DeleteLocation(ctx, &location)
+	return err
+}
+
+func deleteNode(cctx *ClientContext, cmd *cobra.Command) error {
+	client := cctx.client
+	ctx := cctx.context
+
+	var node pb.DeleteNodeRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &node); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+	_, err := client.DeleteNode(ctx, &node)
+	return err
+}
+
+func deleteDevice(cctx *ClientContext, cmd *cobra.Command) error {
+	client := cctx.client
+	ctx := cctx.context
+
+	var device pb.DeleteDeviceRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &device); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+	_, err := client.DeleteDevice(ctx, &device)
+	return err
+}
+
+func deleteChannel(cctx *ClientContext, cmd *cobra.Command) error {
+	client := cctx.client
+	ctx := cctx.context
+
+	var channel pb.DeleteChannelRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &channel); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+	_, err := client.DeleteChannel(ctx, &channel)
+	return err
+}
+
+func deleteRole(cctx *ClientContext, cmd *cobra.Command) error {
+	client := cctx.client
+	ctx := cctx.context
+
+	var role pb.DeleteRoleRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &role); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+	_, err := client.DeleteRole(ctx, &role)
+	return err
+}
+
+func deleteAlarmType(cctx *ClientContext, cmd *cobra.Command) error {
+	client := cctx.client
+	ctx := cctx.context
+
+	var alarmType pb.DeleteAlarmTypeRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &alarmType); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+	_, err := client.DeleteAlarmType(ctx, &alarmType)
+	return err
+}
+
+func deleteChannelAlarm(cctx *ClientContext, cmd *cobra.Command) error {
+	client := cctx.client
+	ctx := cctx.context
+
+	var channelAlarm pb.DeleteChannelAlarmRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &channelAlarm); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
+	}
+	_, err := client.DeleteChannelAlarm(ctx, &channelAlarm)
 	return err
 }
 
@@ -139,5 +231,4 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	deleteCmd.Flags().String("parent", "", "Parent of object to delete. Needed for Channel* objects")
 }

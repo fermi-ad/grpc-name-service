@@ -27,8 +27,7 @@ var listCmd = &cobra.Command{
 			Device:       ldeviceFunc,
 			Channel:      lchannelFunc,
 			Role:         lroleFunc,
-			// 	ChannelAccess : createChannelAccess,
-			AlarmType: lalarmTypeFunc,
+			AlarmType:    lalarmTypeFunc,
 		}
 		noun := StringToNsType(args[0])
 		if noun == -1 {
@@ -36,6 +35,16 @@ var listCmd = &cobra.Command{
 			return
 		}
 
+		json_template, _ := cmd.Flags().GetBool("json-template")
+		if json_template {
+			printListJsonTemplate(noun)
+			return
+		}
+		json, _ := cmd.Flags().GetString("json")
+		if json == "" {
+			log.Fatalf("JSON is required")
+			return
+		}
 		lfunc, ok := lfunctions[noun]
 		if !ok {
 			log.Fatalf("Listing %s is not supported", args[0])
@@ -66,17 +75,14 @@ func llocationTypeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 func llocationFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
-	qrequest := pb.ListLocationsRequest{}
-	name, _ := cmd.Flags().GetString("name")
-	if name != "" {
-		qrequest.Name = &name
-	}
-	parent, _ := cmd.Flags().GetString("parent")
-	if parent != "" {
-		qrequest.ParentLocationName = &parent
+
+	var request pb.ListLocationsRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &request); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
 	}
 
-	r, err := client.ListLocations(ctx, &qrequest)
+	r, err := client.ListLocations(ctx, &request)
 	if err == nil {
 		log.Printf("List locations: %v", r.GetLocations())
 	}
@@ -86,16 +92,14 @@ func llocationFunc(cctx *ClientContext, cmd *cobra.Command) error {
 func lnodeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
-	qrequest := pb.ListNodesRequest{}
-	name, _ := cmd.Flags().GetString("name")
-	if name != "" {
-		qrequest.Hostname = &name
+
+	var request pb.ListNodesRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &request); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
 	}
-	parent, _ := cmd.Flags().GetString("parent")
-	if parent != "" {
-		qrequest.LocationName = &parent
-	}
-	r, err := client.ListNodes(ctx, &qrequest)
+
+	r, err := client.ListNodes(ctx, &request)
 	if err == nil {
 		log.Printf("List nodes: %v", r.GetNodes())
 	}
@@ -105,16 +109,14 @@ func lnodeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 func ldeviceFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
-	qrequest := pb.ListDevicesRequest{}
-	name, _ := cmd.Flags().GetString("name")
-	if name != "" {
-		qrequest.Name = &name
+
+	var request pb.ListDevicesRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &request); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
 	}
-	parent, _ := cmd.Flags().GetString("parent")
-	if parent != "" {
-		qrequest.NodeHostname = &parent
-	}
-	r, err := client.ListDevices(ctx, &qrequest)
+
+	r, err := client.ListDevices(ctx, &request)
 	if err == nil {
 		log.Printf("List devices: %v", r.GetDevices())
 	}
@@ -124,21 +126,20 @@ func ldeviceFunc(cctx *ClientContext, cmd *cobra.Command) error {
 func lchannelFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
-	qrequest := pb.ListChannelsRequest{}
-	name, _ := cmd.Flags().GetString("name")
-	if name != "" {
-		qrequest.Name = &name
+
+	var request pb.ListChannelsRequest
+	jsonstr := cmd.Flag("json").Value.String()
+	if err := DecodeJSONToProto(jsonstr, &request); err != nil {
+		log.Fatalf("Failed to decode JSON: %v", err)
 	}
-	parent, _ := cmd.Flags().GetString("parent")
-	if parent != "" {
-		qrequest.DeviceName = &parent
-	}
-	r, err := client.ListChannels(ctx, &qrequest)
+
+	r, err := client.ListChannels(ctx, &request)
 	if err == nil {
 		log.Printf("List channels: %v", r.GetChannels())
 	}
 	return err
 }
+
 func lroleFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
@@ -161,9 +162,49 @@ func lalarmTypeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	return err
 }
 
+func printListJsonTemplate(noun NsType) {
+	pagination := pb.PaginationRequest{
+		PageSize: 10,
+		Page:     1,
+	}
+	optional := "optional"
+	switch noun {
+	case LocationType:
+	case Role:
+	case AlarmType:
+		PrintProtoAsJSON(&emptypb.Empty{})
+	case Location:
+		PrintProtoAsJSON(&pb.ListLocationsRequest{
+			LocationTypeName:   &optional,
+			ParentLocationName: &optional,
+			Pagination:         &pagination,
+		})
+	case Node:
+		PrintProtoAsJSON(&pb.ListNodesRequest{
+			Hostname:     &optional,
+			IpAddress:    &optional,
+			LocationName: &optional,
+			Pagination:   &pagination,
+		})
+	case Device:
+		PrintProtoAsJSON(&pb.ListDevicesRequest{
+			Name:         &optional,
+			NodeHostname: &optional,
+			Pagination:   &pagination,
+		})
+	case Channel:
+		PrintProtoAsJSON(&pb.ListChannelsRequest{
+			Name:       &optional,
+			DeviceName: &optional,
+			Pagination: &pagination,
+		})
+	default:
+		log.Fatalf("Unsupported noun for list JSON template: %v", noun)
+	}
+}
+
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.Flags().String("parent", "", "Filter by parent of the objects to list")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
