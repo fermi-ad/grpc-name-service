@@ -36,7 +36,7 @@ For the test client, you need the following installed:
 - [Go](https://go.dev/doc/install)
 - [Protocol Buffer Compiler](https://protobuf.dev/installation/)
 
-Run the following to install the plugin for [generating Go code](https://protobuf.dev/reference/go/go-generated/)):
+Run the following to install the plugin for generating Go code ([see docs](https://protobuf.dev/reference/go/go-generated/)):
 ```shell
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 ```
