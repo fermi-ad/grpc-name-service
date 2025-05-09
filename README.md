@@ -73,9 +73,9 @@ dee29616ed5a  quay.io/keycloak/keycloak:26.0.7      start --http-enab...  24 min
 Quarkus also comes with a Dev UI, that helps with interacting with application and supporting services.  Go to [SERVER_ADDRESS/q/dev-ui](https://localhost:8443/q/dev-ui) to view.
 
 ## Dev service initialization
-They Keycloak dev service is prepopulated using the configuration from the [Keycloak Dev Services example](https://quarkus.io/version/3.15/guides/security-openid-connect-dev-services), defined in `config/quarkus-realm.json`. This configuration defines 23 users, `alice`, and `bob`, whose passwords are the same as their usernames.  `alice` is given both `admin` and `user` roles, and `bob` is given `user` role only.
+They Keycloak dev service is prepopulated using the configuration from the [Keycloak Dev Services example](https://quarkus.io/version/3.15/guides/security-openid-connect-dev-services), defined in `config/quarkus-realm.json`. This configuration defines users `alice`, and `bob`, whose passwords are the same as their usernames.  `alice` is given both `admin` and `user` roles, and `bob` is given `user` role only.
 
-The Postgres dev service has the database automatically setup and is prepopulated using `src/main/resources/import.sql`
+The Postgres dev service has the database automatically setup and is prepopulated using `src/main/resources/import.sql`. This only applied in dev mode.
 
 
 ## Run test client
@@ -121,7 +121,14 @@ Open `pom.xml` and uncomment the following lines:
         </dependency>
 ```
 
-Run the application in dev mode and go to the Dev UI, click in the Datasources link in the Flyway pane. Hit the Create Initial Migration button
+Run the application in dev mode and go to the Dev UI > Extensions > Datasources link in the Flyway panel. Hit the Migration button (see [documentation](https://quarkus.io/guides/hibernate-orm#flyway)).  This will create the initial data schema file `V1.0.0__acorn-nameserver.sql` under `src/main/resources/db/migration`. 
+
+To have the schema file automatically applied startup, add `quarkus.flyway.migrate-at-start=true` to the `application.properties` file in `src/main/resources`.
+To make further schema changes, update the Hibernate ORM Java classes and add a `V<VERSION>__<NAME>.sql` where `<VERSION>` is the version number to the `db/migration` directory.
+
+Flyway keeps track which migration versions have been applied already in a separate table, to prevent migration files from being applied more than once.
+
+
 
 ## Packaging and running the application
 
@@ -132,71 +139,101 @@ The application can be packaged using:
 ```
 
 It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.  When running as a packaged application, it will use the Postgres and Keycloak settings specified in `application.properties` to connect to external Postgres and Keycloak services. 
+```
+%prod.quarkus.datasource.db-kind = postgresql
+%prod.quarkus.datasource.username = quarkus
+%prod.quarkus.datasource.password = quarkus
+%prod.quarkus.datasource.jdbc.url = jdbc:postgresql://localhost:5432/nameserver
 
-If you want to build an _über-jar_, execute the following command:
+...
+%prod.quarkus.oidc.auth-server-url=http://localhost:8180/realms/quarkus
 
+```
+Running as a packaged application is considered running in production. The URL and connection configuration settings are prefixed with `%prod.` so that they are only applied in production.
+
+## Creating a container image
+
+Add the quarkus extension for the container runtime you are using.  See list of extensions [here](https://quarkus.io/guides/container-image#container-image-extensions)
+Example of adding the podman extension:
+```shell
+./mvnw quarkus:add-extension -Dextensions='container-image-podman'
+```
+
+Once the extension is added, run the following to create a container:
 ```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+./mvnw package -Dnative -Dquarkus.native.container-build=true -Dquarkus.container-image.build=true
+```
+This uses `Dockerfile.native` in `src/main/docker` to build the image. 
+
+You should find an container image like this:
+```shell
+#show image path
+$ podman images
+REPOSITORY                                         TAG             IMAGE ID      CREATED         SIZE
+localhost/echandler/acorn-nameserver               1.0.0-SNAPSHOT  f8c924274a41  2 minutes ago   203 MB
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+### Running the container
 
-## Creating a native executable
+Here's an example of running the container 
 
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
+1.  Start up the supporting services using helper scripts.
+```shell
+$ cd test_scripts
+$ ./start-services.sh
+Starting postgres
+7c1fee4a608b7d4fe1fc6ba49a17a04cc8f0e72af84e65a9474bbbe0805a886c
+Creating keycloak test image
+STEP 1/3: FROM quay.io/keycloak/keycloak:26.0.7
+STEP 2/3: COPY quarkus-realm.json /opt/keycloak/data/import/realm-export.json
+--> 5fb5918bc404
+STEP 3/3: CMD ["start-dev", "--import-realm"]
+COMMIT ns-test-keycloak:0
+--> 33fd8e5dc77d
+Successfully tagged localhost/ns-test-keycloak:0
+33fd8e5dc77d7330169bc3cb7b81a4404cc081090e54ba26e1d7ee7e9f5e3514
+Starting keycloak
+29fc91bf9c8e72dbcb74bca1dc43dd7c0ee4566644cec12f9928fbf2eb4394ce
+All services started
+$ podman ps
+CONTAINER ID  IMAGE                          COMMAND               CREATED        STATUS        PORTS                   NAMES
+7c1fee4a608b  docker.io/library/postgres:17  postgres              3 minutes ago  Up 3 minutes  0.0.0.0:5432->5432/tcp  ns-test-postgres
+29fc91bf9c8e  localhost/ns-test-keycloak:0   start-dev --impor...  3 minutes ago  Up 3 minutes  0.0.0.0:8180->8080/tcp  ns-test-keycloak
+```
+2. Run nameserver container.  Use host network to access exposed ports from postgres and keycloak containers
+```shell
+$ podman run --network=host -p 8443:8443 localhost/echandler/acorn-nameserver:1.0.0-SNAPSHOT
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+## Other services provided
+Below list several other services the nameserver provides
+### Grpc Reflection 
+```shell
+$ grpcurl -key server.key -cert server.crt -insecure localhost:8443 list
+NameService
+grpc.health.v1.Health
+$ grpcurl -key server.key -cert server.crt -insecure localhost:8443 describe NameService
+NameService is a service:
+service NameService {
+  rpc AddChannelAccessControl ( .AddChannelAccessControlRequest ) returns ( .ChannelAccessControlResponse );
+  rpc AddChannelAlarm ( .AddChannelAlarmRequest ) returns ( .ChannelAlarmResponse );
+  rpc AddChannelTransform ( .AddChannelTransformRequest ) returns ( .ChannelTransformResponse );
+  rpc CreateAlarmType ( .CreateAlarmTypeRequest ) returns ( .AlarmTypeResponse );
+  rpc CreateChannel ( .CreateChannelRequest ) returns ( .ChannelResponse );
+  rpc CreateDevice ( .CreateDeviceRequest ) returns ( .DeviceResponse );
+  rpc CreateLocation ( .CreateLocationRequest ) returns ( .LocationResponse );
+  rpc CreateLocationType ( .CreateLocationTypeRequest ) returns ( .LocationTypeResponse );
+  rpc CreateNode ( .CreateNodeRequest ) returns ( .NodeResponse );
+  rpc CreateRole ( .CreateRoleRequest ) returns ( .RoleResponse );
+...
+}
+$ grpcurl -key server.key -cert server.crt -insecure localhost:8443 describe .CreateChannelRequest
+CreateChannelRequest is a message:
+message CreateChannelRequest {
+  .Channel channel = 1;
+}
 ```
-
-You can then execute your native executable with: `./target/acorn-nameserver-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Provided Code
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
-
-# Personal notes
-
-Start in dev mode
-```
-quarkus dev
-```
-
-Run psql in container
-```
-podman ps
-podman exec -it exciting_leakey psql -U quarkus -d quarkus -c "SELECT * FROM location;"
-```
-Inspect GRPC API
-```
-grpcurl -plaintext localhost:9000 list
-```
-
-Dev UI URL:  http://localhost:8080/q/dev-ui/io.quarkus.quarkus-grpc/services
-
-The application can be packaged using:
-
-```shell script
-./mvnw package
-```
-
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+### Health check
 

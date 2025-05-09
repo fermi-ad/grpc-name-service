@@ -5,7 +5,6 @@ import io.quarkus.grpc.GrpcService;
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
-import nameserver.model.LocationType;
 import proto.AddChannelAccessControlRequest;
 import proto.AddChannelAlarmRequest;
 import proto.AddChannelTransformRequest;

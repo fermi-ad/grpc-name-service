@@ -1,7 +1,7 @@
 
     create sequence AlarmType_SEQ start with 1 increment by 50;
 
-    create sequence channel_alarm_SEQ start with 1 increment by 50;
+    create sequence ChannelAlarm_SEQ start with 1 increment by 50;
 
     create sequence Channel_SEQ start with 1 increment by 50;
 
@@ -107,12 +107,12 @@
        foreign key (device_id) 
        references Device;
 
-    alter table if exists channel_alarm 
+    alter table if exists ChannelAlarm 
        add constraint FKopcl5pa9y9h8tk9nufpx7ptxm 
        foreign key (alarm_type_id) 
        references AlarmType;
 
-    alter table if exists channel_alarm 
+    alter table if exists ChannelAlarm 
        add constraint FKgvjgq3wttiulpuvg7s81kwkbs 
        foreign key (channel_id) 
        references Channel;

@@ -1,5 +1,7 @@
 FROM quay.io/keycloak/keycloak:26.0.7
 
+#Uses the same configuration used in dev services
+#quarkus-realm.json is the same file as in nameserver/config
 COPY quarkus-realm.json /opt/keycloak/data/import/realm-export.json
 
 CMD ["start-dev", "--import-realm"]
