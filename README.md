@@ -121,7 +121,7 @@ Open `pom.xml` and uncomment the following lines:
         </dependency>
 ```
 
-Run the application in dev mode and go to the Dev UI > Extensions > Datasources link in the Flyway panel. Hit the Migration button (see [documentation](https://quarkus.io/guides/hibernate-orm#flyway)).  This will create the initial data schema file `V1.0.0__acorn-nameserver.sql` under `src/main/resources/db/migration`. 
+Run the application in dev mode and go to the [Dev UI](https://quarkus.io/guides/dev-ui) > Extensions > Datasources link in the Flyway panel. Hit the Migration button (see [documentation](https://quarkus.io/guides/hibernate-orm#flyway)).  This will create the initial data schema file `V1.0.0__acorn-nameserver.sql` under `src/main/resources/db/migration`. 
 
 To have the schema file automatically applied startup, add `quarkus.flyway.migrate-at-start=true` to the `application.properties` file in `src/main/resources`.
 To make further schema changes, update the Hibernate ORM Java classes and add a `V<VERSION>__<NAME>.sql` where `<VERSION>` is the version number to the `db/migration` directory.
