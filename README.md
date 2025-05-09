@@ -57,7 +57,7 @@ Server was tested on Linux operating system.
 
 This mode will allow live editing.  The server will by default listen from port 8443. The URL and port it's listening on will be printed on the console with a message like this:
 
-``shell 
+```shell 
 acorn-nameserver 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.18.3) started in 32.681s. Listening on: https://0.0.0.0:8443
 ```
 
