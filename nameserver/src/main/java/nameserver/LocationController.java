@@ -55,7 +55,7 @@ public class LocationController  {
         if (!reqLoc.getDescription().isEmpty()) {      
             location.setDescription(reqLoc.getDescription());
         }
-        location.locationType = LocationTypeController.getLocationTypeByName(reqLoc.getLocationTypeName());
+        location.setLocationType(LocationTypeController.getLocationTypeByName(reqLoc.getLocationTypeName()));
         if (reqLoc.getParentLocationName().isEmpty()) {
             Location parentLocation = getLocationByName(reqLoc.getParentLocationName());
             location.setParentLocation(parentLocation);

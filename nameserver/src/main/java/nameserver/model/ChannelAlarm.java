@@ -14,15 +14,15 @@ import jakarta.persistence.UniqueConstraint;
 public class ChannelAlarm extends PanacheEntity {
     @NotBlank
     @Column(name = "trigger_condition")
-    public String triggerCondition;
+    private String triggerCondition;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "alarm_type_id")
-    public AlarmType alarmType;
+    private AlarmType alarmType;
     
     @ManyToOne(optional = false)
     @JoinColumn(name = "channel_id")
-    public Channel channel;
+    private Channel channel;
     
     public ChannelAlarm() {
         // Default constructor
@@ -58,4 +58,4 @@ public class ChannelAlarm extends PanacheEntity {
 
 
 
-    
+

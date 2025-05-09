@@ -9,9 +9,9 @@ import jakarta.validation.constraints.NotBlank;
 public class AlarmType extends PanacheEntity {
     @NotBlank
     @Column(unique = true)
-    public String name;
+    private String name;
     
-    public String description;
+    private String description;
 
     public AlarmType() {};
 

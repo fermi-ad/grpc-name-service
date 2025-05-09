@@ -12,16 +12,16 @@ import jakarta.persistence.Table;
 public class ChannelTransform extends PanacheEntity {
     @NotBlank
     @Column(unique = true)
-    public String name;
+    private String name;
 
     @NotBlank    
-    public String transform;
+    private String transform;
     
     @ManyToOne(optional = false)
     @JoinColumn(name = "channel_id")
-    public Channel channel;
+    private Channel channel;
     
-    public String description;
+    private String description;
 
     public ChannelTransform() {
         // Default constructor

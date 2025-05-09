@@ -10,8 +10,8 @@ public class Role extends PanacheEntity {
 
     @NotBlank
     @Column(unique = true)
-    public String name;    
-    public String description;
+    private String name;    
+    private String description;
 
 
     public String getName() {

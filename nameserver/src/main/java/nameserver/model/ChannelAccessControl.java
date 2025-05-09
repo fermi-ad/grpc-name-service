@@ -12,14 +12,14 @@ import jakarta.persistence.Table;
 public class ChannelAccessControl extends PanacheEntity {
     @ManyToOne(optional = false)
     @JoinColumn(name = "channel_id")
-    public Channel channel;
+    private Channel channel;
     
     @ManyToOne(optional = false)
     @JoinColumn(name = "role_id")
-    public Role role;
+    private Role role;
     
-    public boolean read;
-    public boolean write;
+    private boolean read;
+    private boolean write;
 
     public ChannelAccessControl() {
         // Default constructor

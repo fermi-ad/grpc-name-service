@@ -13,17 +13,17 @@ import jakarta.validation.constraints.NotNull;
 public class Location extends PanacheEntity {
     @NotBlank
     @Column(unique = true)
-    public String name;    
-    public String description;
+    private String name;    
+    private String description;
 
     @NotNull
     @ManyToOne
     @JoinColumn(name = "location_type_id")    
-    public LocationType locationType;
+    private LocationType locationType;
     
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "parent_location_id")
-    public Location parentLocation;
+    private Location parentLocation;
 
     public Location() {
         // Default constructor

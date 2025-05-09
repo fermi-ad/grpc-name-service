@@ -12,17 +12,17 @@ import jakarta.validation.constraints.NotNull;
 public class Node extends PanacheEntity {
     @NotBlank
     @Column(unique = true)
-    public String hostname;
+    private String hostname;
     
     @NotBlank
     @Column(name = "ip_address")
-    public String ipAddress;
+    private String ipAddress;
     
-    public String description;
+    private String description;
 
     @ManyToOne(optional=false)
     @JoinColumn(name = "location_id")
-    public Location location;
+    private Location location;
 
     public String getHostname() {
         return hostname;

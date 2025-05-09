@@ -14,13 +14,13 @@ import jakarta.validation.constraints.NotNull;
 public class Device extends PanacheEntity {
     @NotBlank
     @Column(unique = true)
-    public String name;
+    private String name;
 
-    public String description;
+    private String description;
     
     @ManyToOne(optional = false)
     @JoinColumn(name = "node_id")
-    public Node node;
+    private Node node;
 
     /*@OneToMany(mappedBy = "device", cascade = CascadeType.ALL, orphanRemoval = true)
     public java.util.List<Channel> channels;

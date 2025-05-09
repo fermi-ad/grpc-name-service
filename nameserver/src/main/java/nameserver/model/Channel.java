@@ -13,22 +13,22 @@ import jakarta.validation.constraints.NotBlank;
 public class Channel extends PanacheEntity {
     @NotBlank
     @Column(unique = true)
-    public String name;
-    public String description;
-    public String metadata;
+    private String name;
+    private String description;
+    private String metadata;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "device_id")
-    public Device device;
+    private Device device;
 
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
-    public java.util.List<ChannelAlarm> alarms;
+    private java.util.List<ChannelAlarm> alarms;
 
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
-    public java.util.List<ChannelTransform> transforms;
+    private java.util.List<ChannelTransform> transforms;
 
     @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
-    public java.util.List<ChannelAccessControl> accessControls;
+    private java.util.List<ChannelAccessControl> accessControls;
     
     public String getName() {
         return name;
