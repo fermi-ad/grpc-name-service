@@ -70,7 +70,7 @@ fbf4f903bac2  docker.io/testcontainers/ryuk:0.11.0  /bin/ryuk             24 min
 dee29616ed5a  quay.io/keycloak/keycloak:26.0.7      start --http-enab...  24 minutes ago  Up 24 minutes  0.0.0.0:34753->8080/tcp  friendly_cori
 ```
 
-<a id="devui">**_NOTE:_** Quarkus also comes with a Dev UI, that helps with interacting with application and supporting services.  Go to `[SERVER_ADDRESS]/q/dev-ui` (for example: <https://localhost:8443/q/dev-ui>) to view.
+**_NOTE:_** Quarkus also comes with a Dev UI, that helps with interacting with application and supporting services.  Go to `[SERVER_ADDRESS]/q/dev-ui` (for example: <https://localhost:8443/q/dev-ui>) to view.
 
 ## Dev service initialization
 They Keycloak dev service is prepopulated using the configuration from the [Keycloak Dev Services example](https://quarkus.io/version/3.15/guides/security-openid-connect-dev-services), defined in `config/quarkus-realm.json`. This configuration defines users `alice`, and `bob`, whose passwords are the same as their usernames.  `alice` is given both `admin` and `user` roles, and `bob` is given `user` role only.
@@ -121,7 +121,7 @@ Open `pom.xml` and uncomment the following lines:
         </dependency>
 ```
 
-Run the application in dev mode and go to the Dev UI > Extensions > Datasources link in the Flyway panel (See [previous section](#devui) about how to get to the Dev UI). Hit the Migration button (see [documentation](https://quarkus.io/guides/hibernate-orm#flyway)).  This will create the initial data schema file `V1.0.0__acorn-nameserver.sql` under `src/main/resources/db/migration`. 
+Run the application in dev mode and go to the Dev UI > Extensions > Datasources link in the Flyway panel (See [previous section](#running-the-application-in-dev-mode) about how to get to the Dev UI). Hit the Migration button (see [documentation](https://quarkus.io/guides/hibernate-orm#flyway)).  This will create the initial data schema file `V1.0.0__acorn-nameserver.sql` under `src/main/resources/db/migration`. 
 
 To have the schema file automatically applied startup, add `quarkus.flyway.migrate-at-start=true` to the `application.properties` file in `src/main/resources`.
 To make further schema changes, update the Hibernate ORM Java classes and add a `V<VERSION>__<NAME>.sql` where `<VERSION>` is the version number to the `db/migration` directory.
