@@ -249,3 +249,9 @@ $ grpcurl -key server.key -cert server.crt -insecure localhost:8443 grpc.health.
   "status": "SERVING"
 }
 ```
+
+## Notes about source code
+Source code is at `src/main/java/nameserver`.  The main entry point is in `NameServiceImpl.java`, which defines the main gRPC service.  Code uses Hiberate ORM to define the SQL data schema and handles interactions with the database.  The Hibernate ORM entities are defined in the `nameserver/model`.
+
+Proto files are defined in `src/main/proto`
+

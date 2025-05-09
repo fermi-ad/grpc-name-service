@@ -40,11 +40,18 @@ import io.grpc.Status;
 import java.util.logging.Logger;
 import jakarta.annotation.security.RolesAllowed;;
 
+/**
+ * NameServiceImpl
+ * Implements the NameService gRPC service.
+ * This class handles the gRPC requests and delegates the processing to the appropriate controller classes.
+ * This class also specifies the security roles required for each method
+ */
 @GrpcService
 public class NameServiceImpl implements proto.NameService {
 
     static final Logger logger = java.util.logging.Logger.getLogger(NameServiceImpl.class.getName());
 
+    //Finds the root cause of the exception
     private Throwable getRootCause(Throwable throwable) {
         Throwable cause = throwable;
         while (cause.getCause() != null) {
@@ -52,13 +59,13 @@ public class NameServiceImpl implements proto.NameService {
         }
         return cause;
     }
+
+    // Prints the call stack of the exception to the console
     private void printCallStack(Throwable throwable) {
         int limit = 10;
         int i = 0;
-        // Log the throwable message
         logger.severe("Exception occurred: " + throwable.getMessage());
     
-        // Print the stack trace to the logger
         for (StackTraceElement element : throwable.getStackTrace()) {
             if (i >= limit) {
                 break; // Limit the number of stack trace elements to log
@@ -67,6 +74,13 @@ public class NameServiceImpl implements proto.NameService {
             i++;
         }
     }
+
+    /* 
+     * Helper function that executes the method for processing the gRPC request
+     * and wraps the result as the expected Uni type.
+     * Also handles exceptions, converts them to gRPC status codes, and 
+     * prints the call stack. 
+    */
     private <T> Uni<T> createUni(java.util.function.Supplier<T> action) {
         return Uni.createFrom().item(action)
         .onFailure().recoverWithItem((Throwable throwable) -> {
