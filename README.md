@@ -88,7 +88,7 @@ The Postgres dev service has the database automatically setup and is prepopulate
 ```shell
 ./nsclient list device --keycloak-url=http://localhost:KEYCLOAK_PORT
 2025/05/08 11:24:23 Connecting to localhost:8443
-2025/05/08 11:24:23 List devices: [name:"Device A" description:"Device A description" node_hostname:"Node A" name:"Device B" description:"" node_hostname:"Node A"]
+2025/05/08 11:24:23 List devices: [name:"Device A" description:"Device A description" node_hostname:"Node A"]
 ```
 
 Let's now try adding a new device.  Input for the device can be passed in via JSON data.  To see the JSON format run
@@ -155,8 +155,9 @@ Running as a packaged application is considered running in production. The URL a
 
 ## Creating a container image
 
-Add the quarkus extension for the container runtime you are using.  See list of extensions [here](https://quarkus.io/guides/container-image#container-image-extensions)
-Example of adding the podman extension:
+Add the quarkus extension for the container runtime you are using.  See list of extensions [here](https://quarkus.io/guides/container-image#container-image-extensions).
+
+Example of adding the Podman extension:
 ```shell
 ./mvnw quarkus:add-extension -Dextensions='container-image-podman'
 ```
@@ -208,12 +209,15 @@ $ podman run --network=host -p 8443:8443 localhost/echandler/acorn-nameserver:1.
 ```
 
 ## Other services provided
-Below list several other services the nameserver provides
-### Grpc Reflection 
+Below list several other services provided:
+### gRPC Reflection 
+Server has gRPC reflection enabled to allow clients lookup what methods are available.
 ```shell
+#List gRPC services available
 $ grpcurl -key server.key -cert server.crt -insecure localhost:8443 list
 NameService
 grpc.health.v1.Health
+#Describe the NameService
 $ grpcurl -key server.key -cert server.crt -insecure localhost:8443 describe NameService
 NameService is a service:
 service NameService {
@@ -229,6 +233,7 @@ service NameService {
   rpc CreateRole ( .CreateRoleRequest ) returns ( .RoleResponse );
 ...
 }
+#Describe a message type
 $ grpcurl -key server.key -cert server.crt -insecure localhost:8443 describe .CreateChannelRequest
 CreateChannelRequest is a message:
 message CreateChannelRequest {
@@ -236,4 +241,11 @@ message CreateChannelRequest {
 }
 ```
 ### Health check
+Quarkus gRPC provides a health check
+```shell
+$ grpcurl -key server.key -cert server.crt -insecure localhost:8443 grpc.health.v1.Health/Check
 
+{
+  "status": "SERVING"
+}
+```
