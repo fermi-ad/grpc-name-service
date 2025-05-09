@@ -4,8 +4,7 @@ Name server serves as a single, reliable source for EPICS and ACNET control syst
 
 
 ## Background
- - Requirements
- - Data model design
+ - [Requirements](docs/nameserver-requirements.pdf)
 
 ## Features
 
