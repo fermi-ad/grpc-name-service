@@ -70,7 +70,7 @@ fbf4f903bac2  docker.io/testcontainers/ryuk:0.11.0  /bin/ryuk             24 min
 dee29616ed5a  quay.io/keycloak/keycloak:26.0.7      start --http-enab...  24 minutes ago  Up 24 minutes  0.0.0.0:34753->8080/tcp  friendly_cori
 ```
 
-Quarkus also comes with a Dev UI, that helps with interacting with application and supporting services.  Go to [SERVER_ADDRESS/q/dev-ui](https://localhost:8443/q/dev-ui) to view.
+Quarkus also comes with a Dev UI, that helps with interacting with application and supporting services.  Go to `[SERVER_ADDRESS]/q/dev-ui` (for example: <https://localhost:8443/q/dev-ui>) to view.
 
 ## Dev service initialization
 They Keycloak dev service is prepopulated using the configuration from the [Keycloak Dev Services example](https://quarkus.io/version/3.15/guides/security-openid-connect-dev-services), defined in `config/quarkus-realm.json`. This configuration defines users `alice`, and `bob`, whose passwords are the same as their usernames.  `alice` is given both `admin` and `user` roles, and `bob` is given `user` role only.
