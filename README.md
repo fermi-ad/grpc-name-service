@@ -1,7 +1,29 @@
 # Acorn Nameserver prototype
 
 Name server serves as a single, reliable source for EPICS and ACNET control system component information such as device definitions, property configurations, and associated metadata.
+<!-- TOC -->
 
+- [Acorn Nameserver prototype](#acorn-nameserver-prototype)
+    - [Background](#background)
+    - [Features](#features)
+    - [Implementation](#implementation)
+    - [Prerequisites](#prerequisites)
+    - [Running the application in dev mode](#running-the-application-in-dev-mode)
+        - [Dev service initialization](#dev-service-initialization)
+    - [Run test client](#run-test-client)
+    - [Setting up for production](#setting-up-for-production)
+        - [Setting up data schema management](#setting-up-data-schema-management)
+        - [Configure application](#configure-application)
+    - [Package and deploying the application](#package-and-deploying-the-application)
+        - [Package as a JAR file](#package-as-a-jar-file)
+        - [Package as a container image](#package-as-a-container-image)
+        - [Package as a Kubernetes application](#package-as-a-kubernetes-application)
+    - [Other services provided](#other-services-provided)
+        - [gRPC Reflection](#grpc-reflection)
+        - [Health check](#health-check)
+    - [Notes about source code](#notes-about-source-code)
+
+<!-- /TOC -->
 
 ## Background
  - [Requirements](docs/nameserver-requirements.pdf)
@@ -28,7 +50,7 @@ For more information, go to [quarkus.io](https://quarkus.io/)
 For prerequisites for Quarkus, refer to the prerequisite lists in the [Creating your first application](https://quarkus.io/guides/getting-started) and [Your second Quarkus application](https://quarkus.io/guides/getting-started-dev-services) tutorials. Specifically, the following need to be installed:
 - JDK 17+ installed with JAVA_HOME configured appropriately
 - Apache Maven 3.9.9
-- A working container runtime (Docker or [Podman](https://quarkus.io/guides/podman))
+- A working container runtime (Docker or [Podman](https://quarkus.io/guides/podman)) is needed to run in dev mode
 
 **_NOTE:_** Application was tested using Podman.  As such, instructions below use Podman.  To use Docker, replace `podman` with `docker`
 
@@ -72,7 +94,7 @@ dee29616ed5a  quay.io/keycloak/keycloak:26.0.7      start --http-enab...  24 min
 
 **_NOTE:_** Quarkus also comes with a Dev UI, that helps with interacting with application and supporting services.  Go to `[SERVER_ADDRESS]/q/dev-ui` (for example: <https://localhost:8443/q/dev-ui>) to view.
 
-## Dev service initialization
+### Dev service initialization
 They Keycloak dev service is prepopulated using the configuration from the [Keycloak Dev Services example](https://quarkus.io/version/3.15/guides/security-openid-connect-dev-services), defined in `config/quarkus-realm.json`. This configuration defines users `alice`, and `bob`, whose passwords are the same as their usernames.  `alice` is given both `admin` and `user` roles, and `bob` is given `user` role only.
 
 The Postgres dev service has the database automatically setup and is prepopulated using `src/main/resources/import.sql`. This only applied in dev mode.
@@ -105,7 +127,8 @@ This example links the new device to the same node as the already existing devic
 
 Similar commands can be run on other resources such as channels, nodes, locations, etc. To see list of commands, run `./nsclient -h`.  
 
-## Setting up data schema management
+## Setting up for production
+### Setting up data schema management
 In dev mode, the quarkus automatically creates the database at startup using Hibernate ORM database generation based on the Hibernate ORM Java classes defined in `src/main/java/nameserver/model`.  It will also re-create the database tables if any of the Hibernate ORM classes change.  This is great when you're in development! Once you're at the point you want to deploy the server, you can use Flyway to create the initial schema and manage any schema changes.
 
 Open `pom.xml` and uncomment the following lines:
@@ -130,7 +153,42 @@ Flyway keeps track which migration versions have been applied already in a separ
 
 
 
-## Packaging and running the application
+### Configure application
+
+Open the `application.properties` file in `src/main/resources/`, make sure the following settings are set correctly to work with your external services
+
+Postgres settings
+```
+%prod.quarkus.datasource.db-kind = postgresql
+%prod.quarkus.datasource.username = quarkus
+%prod.quarkus.datasource.password = quarkus
+%prod.quarkus.datasource.jdbc.url = jdbc:postgresql://localhost:5432/nameserver
+```
+
+Keycloak settings
+```
+%prod.quarkus.oidc.auth-server-url=http://localhost:8180/realms/quarkus
+quarkus.oidc.client-id=backend-service
+quarkus.oidc.credentials.secret=secret
+```
+
+SSL settings
+```
+quarkus.http.ssl.certificate.files=ssl/server.crt
+quarkus.http.ssl.certificate.key-files=ssl/server.key
+```
+
+Note that if you need to have different configuration between development (i.e dev mode), test, and in production, prefix settings with `%dev`, `%test`, or `%prod` to only use the settings in either develeopment, test, or production.
+
+
+## Package and deploying the application
+Quarkus may different options for packaging and deploying applicaitons. The ones covered are:
+1. As a JAR file
+2. As a container
+3. As a Kubernetes application (brief)
+
+###  Package as a JAR file
+The instructions for packaging as a JAR file is included here as a quick way to run and test the nameserver as a packaged application.
 
 The application can be packaged using:
 
@@ -140,27 +198,12 @@ The application can be packaged using:
 
 It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.  When running as a packaged application, it will use the Postgres and Keycloak settings specified in `application.properties` to connect to external Postgres and Keycloak services. 
-```
-%prod.quarkus.datasource.db-kind = postgresql
-%prod.quarkus.datasource.username = quarkus
-%prod.quarkus.datasource.password = quarkus
-%prod.quarkus.datasource.jdbc.url = jdbc:postgresql://localhost:5432/nameserver
+The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`. 
 
-...
-%prod.quarkus.oidc.auth-server-url=http://localhost:8180/realms/quarkus
+### Package as a container image
 
-```
-Running as a packaged application is considered running in production. The URL and connection configuration settings are prefixed with `%prod.` so that they are only applied in production.
+Add the quarkus extension for the type of container image you are using.  See list of extensions [here](https://quarkus.io/guides/container-image#container-image-extensions).
 
-## Creating a container image
-
-Add the quarkus extension for the container runtime you are using.  See list of extensions [here](https://quarkus.io/guides/container-image#container-image-extensions).
-
-Example of adding the Podman extension:
-```shell
-./mvnw quarkus:add-extension -Dextensions='container-image-podman'
-```
 
 Once the extension is added, run the following to create a container:
 ```shell script
@@ -176,9 +219,7 @@ REPOSITORY                                         TAG             IMAGE ID     
 localhost/echandler/acorn-nameserver               1.0.0-SNAPSHOT  f8c924274a41  2 minutes ago   203 MB
 ```
 
-### Running the container
-
-Here's an example of running the container 
+Here's an example of running the container. It works with unmodified settings from `applications.properties`
 
 1.  Start up the supporting services using helper scripts.
 ```shell
@@ -207,6 +248,16 @@ CONTAINER ID  IMAGE                          COMMAND               CREATED      
 ```shell
 $ podman run --network=host -p 8443:8443 localhost/echandler/acorn-nameserver:1.0.0-SNAPSHOT
 ```
+
+### Package as a Kubernetes application
+
+Quarkus has support for automatically generating Kubernetes resources and deploying your application to a Kubernetes cluster.  This was not tested, however, below are useful links to learn more information:
+
+- <https://quarkus.io/guides/grpc-kubernetes>
+- <https://quarkus.io/guides/deploying-to-kubernetes>
+
+Note that SmallRye Health extension is already added to the application and `quarkus.grpc.server.use-separate-server` is set to `false`, so you don't need to change `quarkus.kubernetes.ingress.target-port`.
+
 
 ## Other services provided
 Below list several other services provided:
@@ -249,6 +300,7 @@ $ grpcurl -key server.key -cert server.crt -insecure localhost:8443 grpc.health.
   "status": "SERVING"
 }
 ```
+There is also a Health REST API you can access by going to  `[SERVER_URL]/q/health`. This is part of the `smallrye-health` Quarkus extension. See [documentation](https://quarkus.io/guides/smallrye-health#running-the-health-check) for more details. 
 
 ## Notes about source code
 Source code is at `src/main/java/nameserver`.  The main entry point is in `NameServiceImpl.java`, which defines the main gRPC service.  Code uses Hiberate ORM to define the SQL data schema and handles interactions with the database.  The Hibernate ORM entities are defined in the `nameserver/model`.
