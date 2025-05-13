@@ -1,0 +1,10 @@
+#Configuration to use with test environment
+addr: localhost:8443
+ssl-cert: ../nameserver/src/main/resources/ssl/server.crt
+keycloak-url: https://localhost:39507
+auth:  
+  client-id: backend-service
+  client-secret: secret
+  realm: quarkus
+user: alice
+password: alice

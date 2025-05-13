@@ -23,6 +23,7 @@ import (
 	"crypto/x509"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -112,16 +113,27 @@ type PasswordGrantClient struct {
 // NewPasswordGrantClient creates a new client for password grant
 func NewPasswordGrantClient(cmd *cobra.Command) *PasswordGrantClient {
 
-	keycloakURL, _ := cmd.Flags().GetString("keycloak-url")
+	keycloakURL := viper.GetString("keycloak-url")
 	if keycloakURL == "" {
 		log.Fatalf("Keycloak URL is required")
 	}
 
-	realm := "quarkus"
-	clientID := "backend-service"
-	clientSecret := "secret"
-	username, _ := cmd.Flags().GetString("user")
-	password, _ := cmd.Flags().GetString("password")
+	realm := viper.GetString("auth.realm")
+	if realm == "" {
+		log.Fatalf("Realm is required")
+	}
+
+	clientID := viper.GetString("auth.client-id")
+	if clientID == "" {
+		log.Fatalf("Client ID is required")
+	}
+	clientSecret := viper.GetString("auth.client-secret")
+	if clientSecret == "" {
+		log.Fatalf("Client secret is required")
+	}
+
+	username := viper.GetString("user")
+	password := viper.GetString("password")
 	if username == "" || password == "" {
 		log.Fatalf("Username and password are required")
 	}
@@ -230,7 +242,7 @@ func createGrpcConn(cmd *cobra.Command) *grpc.ClientConn {
 	if noTls {
 		creds = insecure.NewCredentials()
 	} else {
-		tlsPath := cmd.Flag("ssl-cert").Value.String()
+		tlsPath := viper.GetString("ssl-cert")
 		if tlsPath == "" {
 			log.Fatalf("SSL certificate path is required")
 		}

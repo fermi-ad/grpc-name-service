@@ -36,7 +36,10 @@ This prototype does the following:
 - Uses secure gRPC as the protocol for service-to-service communication
 - Uses PostgreSQL for storage
 - Uses OpenID Connect Role-based Access Control for authentication and authorization that can be integrated with Keycloak
-- Database schema version control and automated database deployments using Flyway 
+- Database schema version control and automated database deployments 
+- Provides health check and reflection services 
+- One step instruction for deploying as a container 
+ 
 
 ## Implementation
 
@@ -100,9 +103,9 @@ They Keycloak dev service is prepopulated using the configuration from the [Keyc
 The Postgres dev service has the database automatically setup and is prepopulated using `src/main/resources/import.sql`. This only applied in dev mode.
 
 
-## Run test client
+## Run client app
 
-1. Go to the `test_client` directory
+1. Go to the `nsclient` directory
 2. Run `./gen-code.sh` to generate the Go code for gRPC
 3. Run `go build`. This will create the executable `nsclient`
 4. Lookup the keycloak server port by running `podman ps` and looking at the port of the image running keycloak. For example, if the port shows `0.0.0.0:34753->8080/tcp`, the keycloak server port is 34753. 
@@ -112,6 +115,8 @@ The Postgres dev service has the database automatically setup and is prepopulate
 2025/05/08 11:24:23 Connecting to localhost:8443
 2025/05/08 11:24:23 List devices: [name:"Device A" description:"Device A description" node_hostname:"Node A"]
 ```
+The client app by default is using the config file `nsclient.yaml` in the same directory as the executable, which is configured specifically for the dev-mode and test setup.  Run `./nsclient` to see all commands and options available.
+
 
 Let's now try adding a new device.  Input for the device can be passed in via JSON data.  To see the JSON format run
 ```shell
