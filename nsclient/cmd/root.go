@@ -34,8 +34,7 @@ func init() {
 	// will be global for your application.
 
 	var cfgFile string
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/nsclient.yaml)")
-
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file. If not set, uses ./nsclient.yaml or $HOME/nsclient.yaml if exists.")
 	rootCmd.PersistentFlags().String("addr", "", "gRPC server address. Defaults to localhost:8443 or localhost:8080 if --no-tls is set")
 	rootCmd.PersistentFlags().String("ssl-cert", "", "SSL Certificate")
 	rootCmd.PersistentFlags().Bool("no-tls", false, "Turn off tls")
@@ -91,6 +90,4 @@ func init() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Printf("No configuration file found: %v", err)
 	}
-
-	log.Printf("Using config file: %s", viper.ConfigFileUsed())
 }

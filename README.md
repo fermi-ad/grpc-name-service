@@ -38,7 +38,8 @@ This prototype does the following:
 - Uses OpenID Connect Role-based Access Control for authentication and authorization that can be integrated with Keycloak
 - Database schema version control and automated database deployments 
 - Provides health check and reflection services 
-- One step instruction for deploying as a container 
+- Packages the application to a container
+- Provides a client tool to interact with the nameserver
  
 
 ## Implementation
