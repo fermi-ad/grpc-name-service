@@ -10,7 +10,7 @@ Name server serves as a single, reliable source for EPICS and ACNET control syst
     - [Prerequisites](#prerequisites)
     - [Running the application in dev mode](#running-the-application-in-dev-mode)
         - [Dev service initialization](#dev-service-initialization)
-    - [Run test client](#run-test-client)
+    - [Run client app](#run-client-app)
     - [Setting up for production](#setting-up-for-production)
         - [Setting up data schema management](#setting-up-data-schema-management)
         - [Configure application](#configure-application)
