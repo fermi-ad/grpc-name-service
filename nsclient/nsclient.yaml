@@ -1,7 +1,7 @@
 #Configuration to use with test environment
 addr: localhost:8443
 ssl-cert: ../nameserver/src/main/resources/ssl/server.crt
-keycloak-url: https://localhost:39507
+keycloak-url: http://localhost:8180
 auth:  
   client-id: backend-service
   client-secret: secret
