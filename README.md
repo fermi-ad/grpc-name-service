@@ -99,7 +99,7 @@ dee29616ed5a  quay.io/keycloak/keycloak:26.0.7      start --http-enab...  24 min
 **_NOTE:_** Quarkus also comes with a Dev UI, that helps with interacting with application and supporting services.  Go to `[SERVER_ADDRESS]/q/dev-ui` (for example: <https://localhost:8443/q/dev-ui>) to view.
 
 ### Dev service initialization
-They Keycloak dev service is prepopulated using the configuration from the [Keycloak Dev Services example](https://quarkus.io/version/3.15/guides/security-openid-connect-dev-services), defined in `config/quarkus-realm.json`. This configuration defines users `alice`, and `bob`, whose passwords are the same as their usernames.  `alice` is given both `admin` and `user` roles, and `bob` is given `user` role only.
+They Keycloak dev service is prepopulated using the configuration from the [Keycloak Dev Services example](https://quarkus.io/version/3.15/guides/security-openid-connect-dev-services), defined in `config/quarkus-realm.json`. This configuration defines users `alice`, and `admin`, whose passwords are the same as their usernames.  `admin` is given both `admin` and `user` roles, and `alice` is given `user` role only.
 
 The Postgres dev service has the database automatically setup and is prepopulated using `src/main/resources/import.sql`. This only applied in dev mode.
 
