@@ -68,7 +68,9 @@ func llocationTypeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.ListLocationTypes(ctx, &emptypb.Empty{})
 	if err == nil {
-		log.Printf("List location types: %v", r.GetLocationTypes())
+		for _, locType := range r.GetLocationTypes() {
+			PrettyPrintProto(locType)
+		}
 	}
 	return err
 }
@@ -85,7 +87,9 @@ func llocationFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.ListLocations(ctx, &request)
 	if err == nil {
-		log.Printf("List locations: %v", r.GetLocations())
+		for _, location := range r.GetLocations() {
+			PrettyPrintProto(location)
+		}
 	}
 	return err
 }
@@ -102,7 +106,9 @@ func lnodeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.ListNodes(ctx, &request)
 	if err == nil {
-		log.Printf("List nodes: %v", r.GetNodes())
+		for _, node := range r.GetNodes() {
+			PrettyPrintProto(node)
+		}
 	}
 	return err
 }
@@ -119,7 +125,9 @@ func ldeviceFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.ListDevices(ctx, &request)
 	if err == nil {
-		log.Printf("List devices: %v", r.GetDevices())
+		for _, device := range r.GetDevices() {
+			PrettyPrintProto(device)
+		}
 	}
 	return err
 }
@@ -136,7 +144,9 @@ func lchannelFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.ListChannels(ctx, &request)
 	if err == nil {
-		log.Printf("List channels: %v", r.GetChannels())
+		for _, channel := range r.GetChannels() {
+			PrettyPrintProto(channel)
+		}
 	}
 	return err
 }
@@ -147,7 +157,9 @@ func lroleFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.ListRoles(ctx, &emptypb.Empty{})
 	if err == nil {
-		log.Printf("List roles: %v", r.GetRoles())
+		for _, role := range r.GetRoles() {
+			PrettyPrintProto(role)
+		}
 	}
 	return err
 }
@@ -158,7 +170,9 @@ func lalarmTypeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.ListAlarmTypes(ctx, &emptypb.Empty{})
 	if err == nil {
-		log.Printf("List alarm types: %v", r.GetAlarmTypes())
+		for _, alarmType := range r.GetAlarmTypes() {
+			PrettyPrintProto(alarmType)
+		}
 	}
 	return err
 }

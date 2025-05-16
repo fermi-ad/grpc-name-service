@@ -323,3 +323,19 @@ func currentTime() string {
 func randomNumber() int {
 	return int(time.Now().UnixNano() % 1000)
 }
+
+func PrettyPrintProto(message proto.Message) {
+	// Use protojson to marshal the proto message into JSON with indentation.
+	marshaler := protojson.MarshalOptions{
+		Multiline: true, // Enables pretty-printing with newlines and indentation.
+		Indent:    "  ", // Sets the indentation level.
+	}
+	jsonBytes, err := marshaler.Marshal(message)
+	if err != nil {
+		log.Printf("Failed to marshal proto message: %v", err)
+		return
+	}
+
+	// Print the JSON string.
+	fmt.Println(string(jsonBytes))
+}
