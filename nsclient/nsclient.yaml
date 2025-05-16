@@ -6,5 +6,5 @@ auth:
   client-id: backend-service
   client-secret: secret
   realm: quarkus
-user: alice
-password: alice
+user: admin
+password: admin
