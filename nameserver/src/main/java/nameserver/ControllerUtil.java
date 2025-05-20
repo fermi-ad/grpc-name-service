@@ -13,10 +13,10 @@ public class ControllerUtil {
             if (p.size() != 2) {
                 throw new RuntimeException("Invalid query parameter: " + p);
             }
-            var field = queryParams.get(0);
-            var val = queryParams.get(1);
+            var field = p.get(0);
+            var val = p.get(1);
             String paramName = "param" + paramId;
-            querys.add("lower(" + field + ") like :" + paramName);
+            querys.add(field + " like :" + paramName);
             parameters.and(paramName, "%" + val + "%");
             paramId++;
         }        
