@@ -12,7 +12,13 @@ import nameserver.model.Channel;
 import nameserver.model.ChannelAlarm;
 import nameserver.model.ChannelTransform;
 import nameserver.model.ChannelAccessControl;
+import jakarta.enterprise.context.ApplicationScoped;
 
+/*
+ * Channel API implementation
+ */
+//make class application scoped to make the instance accessible by unit tests
+@ApplicationScoped
 public class ChannelController {
     
     public static Channel getChannelByName(String name) {        

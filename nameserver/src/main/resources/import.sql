@@ -24,8 +24,8 @@ values (nextval('role_SEQ'), 'Support', 'Support role');
 insert into role(id, name, description) 
 values (nextval('role_SEQ'), 'General', 'General role');
 
+alter sequence device_SEQ restart with 1;
 insert into device (id, name, description, node_id)
 values(nextval('device_SEQ'), 'Device A', 'Device A description', 1);
-
 insert into channel (id, name, description, device_id)
-values(nextval('channel_SEQ'), 'Channel A', 'Channel A description', 1);
+values(nextval('channel_SEQ'), 'A:ChannelA', 'Channel A description', 1);
