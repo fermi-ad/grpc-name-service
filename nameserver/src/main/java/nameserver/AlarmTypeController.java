@@ -6,6 +6,7 @@ import com.google.protobuf.Empty;
 import jakarta.transaction.Transactional;
 import nameserver.model.AlarmType;
 
+/*Alarm type API implementation */
 public class AlarmTypeController {
     public static AlarmType getAlarmTypeByName(String name) {        
         AlarmType alarmType = AlarmType.find("name", name).firstResult();

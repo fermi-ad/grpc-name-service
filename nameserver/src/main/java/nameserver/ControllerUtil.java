@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.quarkus.panache.common.Parameters;
 
+/*Common functions used by controller classes*/
 public class ControllerUtil {    
     protected static String createFindParam(List<List<String>> queryParams, Parameters parameters) {            
         List <String> querys = new ArrayList<>();        

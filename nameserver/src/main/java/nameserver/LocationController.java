@@ -9,6 +9,7 @@ import nameserver.model.Location;
 import com.google.protobuf.Empty;
 import java.util.Arrays;
 
+/*Location API implementation */
 public class LocationController  {
     
     public static Location getLocationByName(String name) {        

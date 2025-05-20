@@ -7,6 +7,7 @@ import java.util.List;
 import io.grpc.StatusRuntimeException;
 import io.grpc.Status;
 
+/*Location Type API implementation */
 public class LocationTypeController {
     public static LocationType getLocationTypeByName(String name) {        
         LocationType locationType = LocationType.find("name", name).firstResult();

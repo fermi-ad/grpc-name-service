@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 
+/*Node API implementation */
 public class NodeController {
     
     public static Node getNodeByHostname(String hostname) {        

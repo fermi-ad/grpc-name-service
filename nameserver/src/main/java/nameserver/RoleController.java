@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 import nameserver.model.Role;
 import java.util.List;
 
+/*Role API implementation */
 public class RoleController {
     public static Role getRoleByName(String name) {        
         Role role = Role.find("name", name).firstResult();

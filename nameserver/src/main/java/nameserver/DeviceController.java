@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import nameserver.model.Device;
 import java.util.List;
 
+/*Device API implementation */
 public class DeviceController {
     
     public static Device getDeviceByName(String name) {        
