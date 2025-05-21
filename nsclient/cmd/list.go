@@ -1,6 +1,3 @@
-/*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -62,6 +59,38 @@ var listCmd = &cobra.Command{
 	},
 }
 
+/*
+* handlePagination handles the pagination of the list requests. Calls list function until all
+* items for the request has been receivied. It returns early with an error if any of the requests fail.
+*
+* param callListFunc: The function that performs the list request and prints items in the list. Takes in
+*                     pagination request and returns the pagination response and number of items received.
+ */
+func handlePagination(callListFunc func(*pb.PaginationRequest) (*pb.PaginationResponse, int, error)) error {
+	var err error
+	totalCount := -1
+	var page uint32 = 1
+	for {
+		pagreq := &pb.PaginationRequest{
+			Page: page,
+		}
+		page += 1
+		pagres, nrecv, err := callListFunc(pagreq)
+		if err == nil {
+			if totalCount == -1 {
+				totalCount = int(pagres.GetTotalCount())
+			}
+			totalCount -= nrecv
+			if totalCount <= 0 {
+				break
+			}
+		} else {
+			break
+		}
+	}
+	return err
+}
+
 func llocationTypeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 	client := cctx.client
 	ctx := cctx.context
@@ -85,12 +114,18 @@ func llocationFunc(cctx *ClientContext, cmd *cobra.Command) error {
 		log.Fatalf("Failed to decode JSON: %v", err)
 	}
 
-	r, err := client.ListLocations(ctx, &request)
-	if err == nil {
-		for _, location := range r.GetLocations() {
-			PrettyPrintProto(location)
+	err := handlePagination(func(pagreq *pb.PaginationRequest) (*pb.PaginationResponse, int, error) {
+		request.Pagination = pagreq
+		r, err := client.ListLocations(ctx, &request)
+		if err == nil {
+			for _, location := range r.GetLocations() {
+				PrettyPrintProto(location)
+			}
+			nrecv := len(r.GetLocations())
+			return r.GetPagination(), nrecv, nil
 		}
-	}
+		return nil, 0, err
+	})
 	return err
 }
 
@@ -104,12 +139,18 @@ func lnodeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 		log.Fatalf("Failed to decode JSON: %v", err)
 	}
 
-	r, err := client.ListNodes(ctx, &request)
-	if err == nil {
-		for _, node := range r.GetNodes() {
-			PrettyPrintProto(node)
+	err := handlePagination(func(pagreq *pb.PaginationRequest) (*pb.PaginationResponse, int, error) {
+		request.Pagination = pagreq
+		r, err := client.ListNodes(ctx, &request)
+		if err == nil {
+			for _, node := range r.GetNodes() {
+				PrettyPrintProto(node)
+			}
+			nrecv := len(r.GetNodes())
+			return r.GetPagination(), nrecv, nil
 		}
-	}
+		return nil, 0, err
+	})
 	return err
 }
 
@@ -123,12 +164,18 @@ func ldeviceFunc(cctx *ClientContext, cmd *cobra.Command) error {
 		log.Fatalf("Failed to decode JSON: %v", err)
 	}
 
-	r, err := client.ListDevices(ctx, &request)
-	if err == nil {
-		for _, device := range r.GetDevices() {
-			PrettyPrintProto(device)
+	err := handlePagination(func(pagreq *pb.PaginationRequest) (*pb.PaginationResponse, int, error) {
+		request.Pagination = pagreq
+		r, err := client.ListDevices(ctx, &request)
+		if err == nil {
+			for _, device := range r.GetDevices() {
+				PrettyPrintProto(device)
+			}
+			nrecv := len(r.GetDevices())
+			return r.GetPagination(), nrecv, nil
 		}
-	}
+		return nil, 0, err
+	})
 	return err
 }
 
@@ -142,12 +189,19 @@ func lchannelFunc(cctx *ClientContext, cmd *cobra.Command) error {
 		log.Fatalf("Failed to decode JSON: %v", err)
 	}
 
-	r, err := client.ListChannels(ctx, &request)
-	if err == nil {
-		for _, channel := range r.GetChannels() {
-			PrettyPrintProto(channel)
+	err := handlePagination(func(pagreq *pb.PaginationRequest) (*pb.PaginationResponse, int, error) {
+		request.Pagination = pagreq
+		r, err := client.ListChannels(ctx, &request)
+		if err == nil {
+			for _, channel := range r.GetChannels() {
+				PrettyPrintProto(channel)
+			}
+			nrecv := len(r.GetChannels())
+			return r.GetPagination(), nrecv, nil
 		}
-	}
+		return nil, 0, err
+	})
+
 	return err
 }
 
@@ -220,13 +274,4 @@ func printListJsonTemplate(noun NsType) {
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
