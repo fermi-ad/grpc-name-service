@@ -4,7 +4,6 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"log"
 	pb "nsclient/nameserver/proto"
 
@@ -28,11 +27,6 @@ var getCmd = &cobra.Command{
 		noun := StringToNsType(args[0])
 		if noun == -1 {
 			log.Fatalf("Unknown noun: %s", args[0])
-			return
-		}
-		name, _ := cmd.Flags().GetString("name")
-		if name == "" {
-			log.Fatalf("Name is required")
 			return
 		}
 
@@ -59,7 +53,6 @@ var getCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Failed to get %s: %v", args[0], err)
 		}
-		fmt.Printf("Getd %s: %s\n", args[0], name)
 	},
 }
 
@@ -75,7 +68,7 @@ func glocationFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.GetLocation(ctx, &request)
 	if err == nil {
-		log.Printf("Getd location: %v", r.GetLocation())
+		log.Printf("Get location: %v", r.GetLocation())
 	}
 	return err
 }
@@ -92,7 +85,7 @@ func gnodeFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.GetNode(ctx, &request)
 	if err == nil {
-		log.Printf("Getd node: %v", r.GetNode())
+		log.Printf("Get node: %v", r.GetNode())
 	}
 	return err
 }
@@ -109,7 +102,7 @@ func gdeviceFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.GetDevice(ctx, &request)
 	if err == nil {
-		log.Printf("Getd device: %v", r.GetDevice())
+		log.Printf("Get device: %v", r.GetDevice())
 	}
 	return err
 }
@@ -126,7 +119,7 @@ func gchannelFunc(cctx *ClientContext, cmd *cobra.Command) error {
 
 	r, err := client.GetChannel(ctx, &request)
 	if err == nil {
-		log.Printf("Getd channel: %v", r.GetChannel())
+		log.Printf("Get channel: %v", r.GetChannel())
 	}
 	return err
 }
@@ -156,14 +149,4 @@ func printGetJsonTemplate(noun NsType) {
 
 func init() {
 	rootCmd.AddCommand(getCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
