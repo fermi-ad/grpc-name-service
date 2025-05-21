@@ -1,18 +1,20 @@
 package nameserver;
 
-import jakarta.inject.Inject;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
 import io.quarkus.test.TestTransaction;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import nameserver.model.Channel;
 import nameserver.model.Device;
 import nameserver.model.Node;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.panache.common.Parameters;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /*
  * Tests channel API using ChannelController.  Test environment prepopulates the database using 
@@ -34,6 +36,7 @@ public class ChannelControllerTest {
         device.setName(name);
         device.setDescription("Test device");
         Node node = Node.find("hostname", TEST_NODE_NAME).firstResult();
+        assertNotNull(node);
         device.setNode(node);
         device.persist();
 
@@ -49,15 +52,21 @@ public class ChannelControllerTest {
     @TestTransaction
     public void testListChannels() {       
 
-        //add extra channel to make sure we get the right one
-        createTestDevice("DeviceB", List.of("B:ChannelA"));
+        //add extra channels
+        var channames = new ArrayList<String>();
+        final var bchannelCount = 8;
+        final var totalChanCount = 1 + bchannelCount;
+        for(int i = 0; i < bchannelCount; i++) {
+            channames.add("B:Channel" + i);
+        }
+        createTestDevice("DeviceB", channames);
 
         //test filtering by device name
         proto.ListChannelsRequest request = proto.ListChannelsRequest.newBuilder()
                 .setDeviceName(TEST_DEVICE_NAME) 
                 .build();
 
-        var channels = channelController.listChannels(request).getChannelsList();
+        var channels = ChannelController.listChannels(request).getChannelsList();
 
         assertNotNull(channels);
         assertEquals(1, channels.size());
@@ -67,10 +76,38 @@ public class ChannelControllerTest {
         //test with no filter
         request = proto.ListChannelsRequest.newBuilder()                
                 .build();
-        channels = channelController.listChannels(request).getChannelsList();
+        channels = ChannelController.listChannels(request).getChannelsList();
         assertNotNull(channels);
-        assertTrue(channels.size() > 1);
+        assertEquals(channels.size(), totalChanCount);
         
+        //test pagination
+        request = proto.ListChannelsRequest.newBuilder()                
+                .setPagination(proto.PaginationRequest.newBuilder()
+                        .setPageSize(5)
+                        .setPage(1))
+                .build();
+
+        var response = ChannelController.listChannels(request);
+        channels = response.getChannelsList();
+        var pagresp = response.getPagination();
+        assertNotNull(channels);
+        assertEquals(5, channels.size());
+        assertEquals(1, pagresp.getPage()); 
+        assertEquals(totalChanCount, pagresp.getTotalCount());
+        
+        request = proto.ListChannelsRequest.newBuilder()                
+                .setPagination(proto.PaginationRequest.newBuilder()
+                        .setPageSize(5)
+                        .setPage(2))
+                .build();
+        response = ChannelController.listChannels(request);
+        channels = response.getChannelsList();
+        pagresp = response.getPagination();
+        assertNotNull(channels);
+        assertEquals(4, channels.size());
+        assertEquals(2, pagresp.getPage());
+        assertEquals(totalChanCount, pagresp.getTotalCount());
+
     }
 
     @Test
