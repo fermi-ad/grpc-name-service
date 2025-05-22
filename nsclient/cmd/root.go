@@ -1,6 +1,3 @@
-/*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -29,10 +26,7 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
+	// set up common command line flags for all commands
 	var cfgFile string
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file. If not set, uses ./nsclient.yaml or $HOME/nsclient.yaml if exists.")
 	rootCmd.PersistentFlags().String("addr", "", "gRPC server address. Defaults to localhost:8443 or localhost:8080 if --no-tls is set")
@@ -49,7 +43,7 @@ func init() {
 	rootCmd.PersistentFlags().Bool("verbose", false, "Print debug output")
 	rootCmd.PersistentFlags().String("auth-realm", "", "Realm for authentication")
 
-	// Bind flags to Viper
+	// Bind certain command line flags to Viper so they can be set from the config file
 	if err := viper.BindPFlag("addr", rootCmd.PersistentFlags().Lookup("addr")); err != nil {
 		log.Fatalf("Error binding flag 'addr': %v", err)
 	}

@@ -29,8 +29,14 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+/*
+ * Common functions for all commands
+ */
+
+// NsType is an enumeration of the different types of resources
 type NsType int64
 
+// object types supported by the nameserver
 const (
 	LocationType NsType = iota
 	Location
@@ -57,6 +63,7 @@ var nsTypeNames = map[NsType]string{
 	ChannelTransform: "channel_transform",
 }
 
+// Converts a string to its corresponding NsType
 func StringToNsType(s string) NsType {
 	for k, v := range nsTypeNames {
 		if s == v {
@@ -66,6 +73,7 @@ func StringToNsType(s string) NsType {
 	return -1
 }
 
+// Prints all supported types
 func SupportedNsTypeString() string {
 	var supportedTypes []string
 	for _, v := range nsTypeNames {
@@ -74,7 +82,7 @@ func SupportedNsTypeString() string {
 	return "Supported types: " + strings.Join(supportedTypes, ", ")
 }
 
-// NsTypeToString converts an NsType to its string representation
+// Converts an NsType to its string representation
 func NsTypeToString(t NsType) string {
 	switch t {
 	case LocationType:
@@ -225,6 +233,7 @@ func DebugToken(token string) {
 	fmt.Println(prettyJSON.String())
 }
 
+// Creates a new gRPC connection to the server
 func createGrpcConn(cmd *cobra.Command) *grpc.ClientConn {
 	addr, _ := cmd.Flags().GetString("addr")
 	noTls, _ := cmd.Flags().GetBool("no-tls")
@@ -316,14 +325,7 @@ func PrintProtoAsJSON(protoMsg proto.Message) {
 	fmt.Println(string(jsonData))
 }
 
-func currentTime() string {
-	return time.Now().Format(time.RFC3339)
-}
-
-func randomNumber() int {
-	return int(time.Now().UnixNano() % 1000)
-}
-
+// Takes a proto message and prints it in a human-readable format.
 func PrettyPrintProto(message proto.Message) {
 	// Use protojson to marshal the proto message into JSON with indentation.
 	marshaler := protojson.MarshalOptions{
