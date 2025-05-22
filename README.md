@@ -32,7 +32,7 @@ Name server serves as a single, reliable source for EPICS and ACNET control syst
 ## Features
 
 This prototype does the following:
-- Hosts component information about the control system devices (see [data model design document](docs/nameserver-data-schema-design.pptx) for more detail), including nodes, locations, alarm and access control properties, etc...
+- Hosts component information about the control system devices, including nodes, locations, alarm and access control properties, etc...
 - Uses secure gRPC as the protocol for service-to-service communication
 - Uses PostgreSQL for storage
 - Uses OpenID Connect Role-based Access Control for authentication and authorization that can be integrated with Keycloak
@@ -41,6 +41,7 @@ This prototype does the following:
 - Packages the application to a container
 - Provides a client tool to interact with the nameserver
  
+ See the [Nameserver design document](docs/nameserver-design.pdf) for more information
 
 ## Implementation
 
