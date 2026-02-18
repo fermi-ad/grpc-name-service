@@ -8,9 +8,9 @@ RUN chown 1001 /work \
     && chown 1001:root /work
 COPY --chown=1001:root --chmod=0755 target/*-runner /work/application
 
-RUN mkdir -p /work/ssl
-COPY --chown=1001:root --chmod=0644 src/main/resources/ssl/server.key /work/ssl/server.key
-COPY --chown=1001:root --chmod=0644 src/main/resources/ssl/server.crt /work/ssl/server.crt
+#RUN mkdir -p /work/ssl
+#COPY --chown=1001:root --chmod=0644 src/main/resources/ssl/server.key /work/ssl/server.key
+#COPY --chown=1001:root --chmod=0644 src/main/resources/ssl/server.crt /work/ssl/server.crt
 
 EXPOSE 8443
 USER 1001
