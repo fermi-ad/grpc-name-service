@@ -1,0 +1,120 @@
+record(longin, "A0TST:IS_BLE_EXTR:Version") {
+  field(DESC, "Read software version number")
+  field(DTYP, "stream")
+  field(INP,  "@GlassmanEJ_ET_FJ_FR.proto getVersion(A0TST:IS_BLE_EXTR:) glassman 0")
+  field(PINI, "YES")
+}
+
+record(mbbiDirect, "A0TST:IS_BLE_EXTR:StMon_") {
+  field(DESC, "Initiate status readback")
+  field(DTYP, "stream")
+  field(INP,  "@GlassmanEJ_ET_FJ_FR.proto getStatus(A0TST:IS_BLE_EXTR:) glassman 0")
+  field(SCAN, "1 second")
+  field(FLNK, "A0TST:IS_BLE_EXTR:ModeMonitor")
+}
+record(bi, "A0TST:IS_BLE_EXTR:ModeMonitor") {
+  field(DESC, "Operating mode monitor")
+  field(INP,  "A0TST:IS_BLE_EXTR:StMon_.B0 NPP MS")
+  field(ZNAM, "Voltage")
+  field(ONAM, "Current")
+  field(FLNK, "A0TST:IS_BLE_EXTR:FaultMonitor")
+}
+record(bi, "A0TST:IS_BLE_EXTR:FaultMonitor") {
+  field(DESC, "Fault status monitor")
+  field(INP,  "A0TST:IS_BLE_EXTR:StMon_.B1 NPP MS")
+  field(ZNAM, "OK")
+  field(ONAM, "Fault")
+  field(OSV , "MAJOR")
+  field(FLNK, "A0TST:IS_BLE_EXTR:OnOffMonitor")
+}
+record(bi, "A0TST:IS_BLE_EXTR:OnOffMonitor") {
+  field(DESC, "On/Off status monitor")
+  field(INP,  "A0TST:IS_BLE_EXTR:StMon_.B2 NPP MS")
+  field(ZNAM, "HV OFF")
+  field(ONAM, "HV ON")
+  field(FLNK, "A0TST:IS_BLE_EXTR:VoltageMonitor")
+}
+record(calc, "A0TST:IS_BLE_EXTR:VoltageMonitor") {
+  field(DESC, "Voltage monitor")
+  field(INPB, "5.0")
+  field(INPC, "1023")
+  field(INPF, "A0TST:IS_BLE_EXTR:StMon_ NPP MS")
+  field(CALC, "A*B/C")
+  field(HOPR, "5.0")
+  field(LOPR, "0")
+  field(EGU , "kV")
+  field(PREC, "4")
+  field(FLNK,	"A0TST:IS_BLE_EXTR:CurrentMonitor")
+}
+record(calc, "A0TST:IS_BLE_EXTR:CurrentMonitor") {
+  field(DESC, "Current monitor")
+  field(INPB, "120.0")
+  field(INPC, "1023")
+  field(INPF, "A0TST:IS_BLE_EXTR:StMon_ NPP MS")
+  field(CALC, "A*B/C")
+  field(HOPR, "120.0")
+  field(LOPR, "0")
+  field(EGU , "mA")
+  field(PREC, "4")
+  field(FLNK, "A0TST:IS_BLE_EXTR:PowerMonitor")
+}
+record(calc, "A0TST:IS_BLE_EXTR:PowerMonitor") {
+  field(DESC, "Power monitor")
+  field(INPA, "A0TST:IS_BLE_EXTR:CurrentMonitor")
+  field(INPB, "A0TST:IS_BLE_EXTR:VoltageMonitor")
+  field(CALC, "A*B")
+  field(EGU,  "W")
+}
+
+record(ao,"A0TST:IS_BLE_EXTR:sVoltage") {
+  field(DESC,"Voltage setpoint")
+  field(DTYP,"Soft Channel")
+  field(DRVL,"0")
+  field(DRVH,"4.5")
+  field(EGU, "V")
+#  field(FLNK,"A0TST:IS_BLE_EXTR:VoltageSetpoint")
+}
+record(calcout, "A0TST:IS_BLE_EXTR:VoltageSetpoint") {
+    field(DTYP, "stream")
+    field(OUT,  "@GlassmanEJ_ET_FJ_FR.proto setVoltage(A0TST:IS_BLE_EXTR:) glassman 0")
+    field(INPB, "5.0")
+    field(INPC, "4095")
+    field(INPD, "0.833")
+    field(CALC, "A*C/B*D")
+    field(HOPR, "5.0")
+    field(LOPR, "0")
+    field(EGU,  "V")
+    field(PREC, "4")
+}
+
+record(ao,"A0TST:IS_BLE_EXTR:sCurrent") {
+  field(DESC, "Voltage setpoint")
+  field(DTYP,"Soft Channel")
+  field(DRVL, "0")
+  field(DRVH, "50")
+  field(EGU,  "A")
+#  field(FLNK,"A0TST:IS_BLE_EXTR:CurrentSetpoint")
+}
+record(calcout, "A0TST:IS_BLE_EXTR:CurrentSetpoint") {
+  field(DESC, "Current setpoint")
+  field(DTYP, "stream")
+  field(OUT,  "@GlassmanEJ_ET_FJ_FR.proto setCurrent(A0TST:IS_BLE_EXTR:) glassman 0")
+  field(INPB, "120.0")
+  field(INPC, "4095")
+  field(CALC, "A*C/B")
+  field(HOPR, "120.0")
+  field(LOPR, "0")
+  field(EGU , "mA")
+  field(PREC, "4")
+}
+record(mbbo, "A0TST:IS_BLE_EXTR:OnOff") {
+  field(DESC, "on/off/clear, push all to supply")
+  field(DTYP, "stream")
+  field(OUT,  "@GlassmanEJ_ET_FJ_FR.proto setSupply(A0TST:IS_BLE_EXTR:) glassman 0")
+  field(ZRST, "Off")
+  field(ZRVL, "1")
+  field(ONST, "On")
+  field(ONVL, "2")
+  field(TWST, "Reset")
+  field(TWVL, "4")
+}
