@@ -1,0 +1,1223 @@
+##############################################################################
+# BinaryHeartBeat.template
+# Function: To check for a change of state of a binary heartbeat bit
+#
+# Written by Pierrick Hanlet, 19 November 2025
+#
+##############################################################################
+record(mbbi,"A0TST:IS_BLE_HVPLC:HBstatus") {
+  field(DESC,"HVPLC: Heartbeat")
+  field(VAL, "0")
+  field(PINI,"YES")
+  field(ZRVL,"0")
+  field(ZRST,"OK")
+  field(ZRSV,"NO_ALARM")
+  field(ONVL,"1")
+  field(ONST,"OK")
+  field(ONSV,"NO_ALARM")
+  field(TWVL,"2")
+  field(TWST,"Error")
+  field(TWSV,"MAJOR")
+}
+record(longin,"A0TST:IS_BLE_HVPLC:Timer") {
+  field(DESC,"HVPLC: time")
+  field(VAL, "0")
+  field(PINI,"YES")
+}
+record(longin,"A0TST:IS_BLE_HVPLC:ResetTime") {
+  field(DESC,"HVPLC: time")
+  field(VAL, "4")
+  field(PINI,"YES")
+}
+record(longin,"A0TST:IS_BLE_HVPLC:MaxErr") {
+  field(DESC,"HVPLC: time")
+  field(VAL, "4")
+  field(PINI,"YES")
+}
+record(calcout,"A0TST:IS_BLE_HVPLC:calTime") {
+  field(DESC,"HVPLC: time")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_HVPLC:Timer")
+  field(INPB,"A0TST:IS_BLE_HVPLC:ResetTime")
+  field(CALC,"A<B?A+1:0")
+  field(OUT, "A0TST:IS_BLE_HVPLC:Timer.VAL")
+  field(FLNK,"A0TST:IS_BLE_HVPLC:Timer.PROC")
+}
+
+record(bi,"A0TST:IS_BLE_HVPLC:LastVal") {
+  field(DESC,"HVPLC: previous")
+  field(DTYP,"Soft Channel")
+  field(VAL, "0")
+  field(PINI,"YES")
+}
+record(longin,"A0TST:IS_BLE_HVPLC:ErrCnt") {
+  field(DESC,"HVPLC: Error Count")
+  field(VAL, "0")
+  field(PINI,"YES")
+  field(HHSV,"MAJOR")
+  field(HIHI,"4")
+}
+record(calcout,"A0TST:IS_BLE_HVPLC:checkChange") {
+  field(DESC,"HVPLC: check for change")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_HVPLC:Timer")
+  field(INPB,"A0TST:IS_BLE_PLC2024:rB2IT")
+  field(INPC,"A0TST:IS_BLE_HVPLC:LastVal")
+  field(INPD,"A0TST:IS_BLE_HVPLC:ErrCnt")
+  field(CALC,"A<=1&&B#C&&B=0?3:A<=1&&B#C&&B=1?5:A<=1&&B=C?8:0")
+  field(OUT, "A0TST:IS_BLE_HVPLC:seqChange.SELN")
+  field(FLNK,"A0TST:IS_BLE_HVPLC:seqChange")
+}
+record(seq,"A0TST:IS_BLE_HVPLC:seqChange") {
+  field(DO1, "0")
+  field(LNK1,"A0TST:IS_BLE_HVPLC:ErrCnt PP")
+  field(DO2, "0")
+  field(LNK2,"A0TST:IS_BLE_HVPLC:LastVal PP")
+  field(DO3, "1")
+  field(LNK3,"A0TST:IS_BLE_HVPLC:LastVal PP")
+  field(DO4, "1")
+  field(LNK4,"A0TST:IS_BLE_HVPLC:calErrCnt.PROC")
+  field(SELM,"Mask")
+  field(SELN,"0")
+}
+record(calcout,"A0TST:IS_BLE_HVPLC:calErrCnt") {
+  field(DESC,"HVPLC: update error count")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_BLE_HVPLC:ErrCnt")
+  field(CALC,"A+1")
+  field(OUT, "A0TST:IS_BLE_HVPLC:ErrCnt.VAL PP")
+  field(FLNK,"A0TST:IS_BLE_HVPLC:calError.PROC")
+}
+record(calcout,"A0TST:IS_BLE_HVPLC:calError") {
+  field(DESC,"HVPLC: update error count")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_BLE_HVPLC:ErrCnt")
+  field(INPB,"A0TST:IS_BLE_HVPLC:MaxErr")
+  field(INPC,"A0TST:IS_BLE_PLC2024:rB2IT")
+  field(CALC,"A>=4?B:C")
+  field(OUT, "A0TST:IS_BLE_HVPLC:HBstatus.VAL")
+  field(FLNK,"A0TST:IS_BLE_HVPLC:HBstatus.PROC")
+}
+###########################################################################
+### Pack individual bits into 16-bit word
+###
+### Create 16-bit mbbi's for trips
+### Written by Pierrick Hanlet, 4 September 2024
+###
+###########################################################################
+### BIAS
+record(calc,"A0TST:IS_BLE_BIAS:calStatus1") {
+  field(DESC,"BIAS: Status")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_PLC2000:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2001:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2002:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2003:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2004:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2005:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2006:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2007:rBIT")
+  field(CALC,"A*1+B*2+C*4+D*8+E*16+F*32+G*64+H*128")
+  field(FLNK,"A0TST:IS_BLE_BIAS:calStatus2")
+}
+record(calc,"A0TST:IS_BLE_BIAS:calStatus2") {
+  field(DESC,"BIAS: Status")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_BLE_PLC2008:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2009:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2010:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2011:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2012:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2013:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2014:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2015:rBIT")
+  field(CALC,"A*256+B*512+C*1024+D*2048+E*4096+F*8192+G*16384+H*32768")
+  field(FLNK,"A0TST:IS_BLE_BIAS:calStatus")
+}
+record(calc,"A0TST:IS_BLE_BIAS:calStatus") {
+  field(DESC,"BIAS: Status")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_BLE_BIAS:calStatus1")
+  field(INPB,"A0TST:IS_BLE_BIAS:calStatus2")
+  field(CALC,"A+B")
+  field(FLNK,"A0TST:IS_BLE_BIAS:Status")
+}
+
+record(mbbi,"A0TST:IS_BLE_BIAS:Status") {
+  field(DESC,"BIAS: Status")
+  field(SCAN,"Passive")
+  field(INP, "A0TST:IS_BLE_BIAS:calStatus")
+  field(ZRVL,"1")
+  field(ONVL,"2")
+  field(TWVL,"4")
+  field(THVL,"8")
+  field(FRVL,"16")
+  field(FVVL,"32")
+  field(SXVL,"64")
+  field(SVVL,"128")
+  field(EIVL,"256")
+  field(NIVL,"512")
+  field(TEVL,"1024")
+  field(ELVL,"2048")
+  field(TVVL,"4096")
+  field(TTVL,"8192")
+  field(FTVL,"16384")
+  field(FFVL,"32768")
+
+  field(ZRSV,"0")
+  field(ONSV,"0")
+  field(TWSV,"0")
+  field(THSV,"0")
+  field(FRSV,"0")
+  field(FVSV,"0")
+  field(SXSV,"0")
+  field(SVSV,"0")
+  field(EISV,"0")
+  field(NISV,"0")
+  field(TESV,"0")
+  field(ELSV,"0")
+  field(TVSV,"0")
+  field(TTSV,"0")
+  field(FTSV,"0")
+  field(FFSV,"0")
+}
+###########################################################################
+### Pack individual bits into 16-bit word
+###
+### Create 16-bit mbbi's for trips
+### Written by Pierrick Hanlet, 4 September 2024
+###
+###########################################################################
+### FLMNT
+record(calc,"A0TST:IS_BLE_FLMNT:calStatus1") {
+  field(DESC,"FLMNT: Status")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_PLC2032:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2033:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2034:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2035:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2036:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2037:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2038:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2039:rBIT")
+  field(CALC,"A*1+B*2+C*4+D*8+E*16+F*32+G*64+H*128")
+  field(FLNK,"A0TST:IS_BLE_FLMNT:calStatus2")
+}
+record(calc,"A0TST:IS_BLE_FLMNT:calStatus2") {
+  field(DESC,"FLMNT: Status")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_BLE_PLC2040:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2041:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2042:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2043:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2044:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2045:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2046:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2047:rBIT")
+  field(CALC,"A*256+B*512+C*1024+D*2048+E*4096+F*8192+G*16384+H*32768")
+  field(FLNK,"A0TST:IS_BLE_FLMNT:calStatus")
+}
+record(calc,"A0TST:IS_BLE_FLMNT:calStatus") {
+  field(DESC,"FLMNT: Status")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_BLE_FLMNT:calStatus1")
+  field(INPB,"A0TST:IS_BLE_FLMNT:calStatus2")
+  field(CALC,"A+B")
+  field(FLNK,"A0TST:IS_BLE_FLMNT:Status")
+}
+
+record(mbbi,"A0TST:IS_BLE_FLMNT:Status") {
+  field(DESC,"FLMNT: Status")
+  field(SCAN,"Passive")
+  field(INP, "A0TST:IS_BLE_FLMNT:calStatus")
+  field(ZRVL,"1")
+  field(ONVL,"2")
+  field(TWVL,"4")
+  field(THVL,"8")
+  field(FRVL,"16")
+  field(FVVL,"32")
+  field(SXVL,"64")
+  field(SVVL,"128")
+  field(EIVL,"256")
+  field(NIVL,"512")
+  field(TEVL,"1024")
+  field(ELVL,"2048")
+  field(TVVL,"4096")
+  field(TTVL,"8192")
+  field(FTVL,"16384")
+  field(FFVL,"32768")
+
+  field(ZRSV,"0")
+  field(ONSV,"0")
+  field(TWSV,"0")
+  field(THSV,"0")
+  field(FRSV,"0")
+  field(FVSV,"0")
+  field(SXSV,"0")
+  field(SVSV,"0")
+  field(EISV,"0")
+  field(NISV,"0")
+  field(TESV,"0")
+  field(ELSV,"0")
+  field(TVSV,"0")
+  field(TTSV,"0")
+  field(FTSV,"0")
+  field(FFSV,"0")
+}
+###########################################################################
+### Pack individual bits into 16-bit word
+###
+### Create 16-bit mbbi's for trips
+### Written by Pierrick Hanlet, 4 September 2024
+###
+###########################################################################
+### SERV
+record(calc,"A0TST:IS_BLE_SERV:calStatus1") {
+  field(DESC,"SERV: Status")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_PLC2064:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2065:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2066:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2067:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2068:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2069:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2070:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2071:rBIT")
+  field(CALC,"A*1+B*2+C*4+D*8+E*16+F*32+G*64+H*128")
+  field(FLNK,"A0TST:IS_BLE_SERV:calStatus2")
+}
+record(calc,"A0TST:IS_BLE_SERV:calStatus2") {
+  field(DESC,"SERV: Status")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_BLE_PLC2072:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2073:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2074:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2075:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2076:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2077:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2078:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2079:rBIT")
+  field(CALC,"A*256+B*512+C*1024+D*2048+E*4096+F*8192+G*16384+H*32768")
+  field(FLNK,"A0TST:IS_BLE_SERV:calStatus")
+}
+record(calc,"A0TST:IS_BLE_SERV:calStatus") {
+  field(DESC,"SERV: Status")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_BLE_SERV:calStatus1")
+  field(INPB,"A0TST:IS_BLE_SERV:calStatus2")
+  field(CALC,"A+B")
+  field(FLNK,"A0TST:IS_BLE_SERV:Status")
+}
+
+record(mbbi,"A0TST:IS_BLE_SERV:Status") {
+  field(DESC,"SERV: Status")
+  field(SCAN,"Passive")
+  field(INP, "A0TST:IS_BLE_SERV:calStatus")
+  field(ZRVL,"1")
+  field(ONVL,"2")
+  field(TWVL,"4")
+  field(THVL,"8")
+  field(FRVL,"16")
+  field(FVVL,"32")
+  field(SXVL,"64")
+  field(SVVL,"128")
+  field(EIVL,"256")
+  field(NIVL,"512")
+  field(TEVL,"1024")
+  field(ELVL,"2048")
+  field(TVVL,"4096")
+  field(TTVL,"8192")
+  field(FTVL,"16384")
+  field(FFVL,"32768")
+
+  field(ZRSV,"0")
+  field(ONSV,"0")
+  field(TWSV,"0")
+  field(THSV,"0")
+  field(FRSV,"0")
+  field(FVSV,"0")
+  field(SXSV,"0")
+  field(SVSV,"0")
+  field(EISV,"0")
+  field(NISV,"0")
+  field(TESV,"0")
+  field(ELSV,"0")
+  field(TVSV,"0")
+  field(TTSV,"0")
+  field(FTSV,"0")
+  field(FFSV,"0")
+}
+###########################################################################
+### Pack individual bits into 8-bit word
+###
+### Create 8-bit mbbi's for trips
+### Written by Pierrick Hanlet, 4 September 2024
+###
+###########################################################################
+### ISO
+record(calc,"A0TST:IS_BLE_ISO:calStaus") {
+  field(DESC,"ISO: Status")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_PLC2048:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2049:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2050:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2051:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2053:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2054:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2055:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2056:rBIT")
+  field(CALC,"A*1+B*2+C*4+D*8+E*16+F*32+G*64+H*128")
+  field(FLNK,"A0TST:IS_BLE_ISO:Status")
+}
+record(mbbi,"A0TST:IS_BLE_ISO:Status") {
+  field(DESC,"ISO: Status")
+  field(SCAN,"Passive")
+  field(INP, "A0TST:IS_BLE_ISO:calStaus")
+  field(ZRVL,"1")
+  field(ONVL,"2")
+  field(TWVL,"4")
+  field(THVL,"8")
+  field(FRVL,"16")
+  field(FVVL,"32")
+  field(SXVL,"64")
+  field(SVVL,"128")
+
+  field(ZRSV,"0")
+  field(ONSV,"0")
+  field(TWSV,"0")
+  field(THSV,"0")
+  field(FRSV,"0")
+  field(FVSV,"0")
+  field(SXSV,"0")
+  field(SVSV,"0")
+}
+###########################################################################
+### Pack individual bits into 8-bit word
+###
+### Create 8-bit mbbi's for trips
+### Written by Pierrick Hanlet, 4 September 2024
+###
+###########################################################################
+### ARC
+record(calc,"A0TST:IS_BLE_ARC:calStaus") {
+  field(DESC,"ARC: Status")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_PLC2080:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2081:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2082:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2083:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2084:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2085:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2086:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2087:rBIT")
+  field(CALC,"A*1+B*2+C*4+D*8+E*16+F*32+G*64+H*128")
+  field(FLNK,"A0TST:IS_BLE_ARC:Status")
+}
+record(mbbi,"A0TST:IS_BLE_ARC:Status") {
+  field(DESC,"ARC: Status")
+  field(SCAN,"Passive")
+  field(INP, "A0TST:IS_BLE_ARC:calStaus")
+  field(ZRVL,"1")
+  field(ONVL,"2")
+  field(TWVL,"4")
+  field(THVL,"8")
+  field(FRVL,"16")
+  field(FVVL,"32")
+  field(SXVL,"64")
+  field(SVVL,"128")
+
+  field(ZRSV,"0")
+  field(ONSV,"0")
+  field(TWSV,"0")
+  field(THSV,"0")
+  field(FRSV,"0")
+  field(FVSV,"0")
+  field(SXSV,"0")
+  field(SVSV,"0")
+}
+###########################################################################
+### Pack individual bits into 8-bit word
+###
+### Create 8-bit mbbi's for trips
+### Written by Pierrick Hanlet, 4 September 2024
+###
+###########################################################################
+### PLASMA
+record(calc,"A0TST:IS_BLE_PLASMA:calStaus") {
+  field(DESC,"PLASMA: Status")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_PLC2088:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2089:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2090:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2091:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2092:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2093:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2094:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2095:rBIT")
+  field(CALC,"A*1+B*2+C*4+D*8+E*16+F*32+G*64+H*128")
+  field(FLNK,"A0TST:IS_BLE_PLASMA:Status")
+}
+record(mbbi,"A0TST:IS_BLE_PLASMA:Status") {
+  field(DESC,"PLASMA: Status")
+  field(SCAN,"Passive")
+  field(INP, "A0TST:IS_BLE_PLASMA:calStaus")
+  field(ZRVL,"1")
+  field(ONVL,"2")
+  field(TWVL,"4")
+  field(THVL,"8")
+  field(FRVL,"16")
+  field(FVVL,"32")
+  field(SXVL,"64")
+  field(SVVL,"128")
+
+  field(ZRSV,"0")
+  field(ONSV,"0")
+  field(TWSV,"0")
+  field(THSV,"0")
+  field(FRSV,"0")
+  field(FVSV,"0")
+  field(SXSV,"0")
+  field(SVSV,"0")
+}
+###########################################################################
+### Pack individual bits into 8-bit word
+###
+### Create 8-bit mbbi's for trips
+### Written by Pierrick Hanlet, 4 September 2024
+###
+###########################################################################
+### EXTRCT
+record(calc,"A0TST:IS_BLE_EXTRCT:calStaus") {
+  field(DESC,"EXTRCT: Status")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_PLC2096:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2097:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2098:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2099:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2100:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2101:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2102:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2103:rBIT")
+  field(CALC,"A*1+B*2+C*4+D*8+E*16+F*32+G*64+H*128")
+  field(FLNK,"A0TST:IS_BLE_EXTRCT:Status")
+}
+record(mbbi,"A0TST:IS_BLE_EXTRCT:Status") {
+  field(DESC,"EXTRCT: Status")
+  field(SCAN,"Passive")
+  field(INP, "A0TST:IS_BLE_EXTRCT:calStaus")
+  field(ZRVL,"1")
+  field(ONVL,"2")
+  field(TWVL,"4")
+  field(THVL,"8")
+  field(FRVL,"16")
+  field(FVVL,"32")
+  field(SXVL,"64")
+  field(SVVL,"128")
+
+  field(ZRSV,"0")
+  field(ONSV,"0")
+  field(TWSV,"0")
+  field(THSV,"0")
+  field(FRSV,"0")
+  field(FVSV,"0")
+  field(SXSV,"0")
+  field(SVSV,"0")
+}
+###########################################################################
+### Pack individual bits into 8-bit word
+###
+### Create 8-bit mbbi's for trips
+### Written by Pierrick Hanlet, 4 September 2024
+###
+###########################################################################
+### ROSS
+record(calc,"A0TST:IS_BLE_ROSS:calStaus") {
+  field(DESC,"ROSS: Status")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_PLC2104:rBIT")
+  field(INPB,"A0TST:IS_BLE_PLC2105:rBIT")
+  field(INPC,"A0TST:IS_BLE_PLC2106:rBIT")
+  field(INPD,"A0TST:IS_BLE_PLC2107:rBIT")
+  field(INPE,"A0TST:IS_BLE_PLC2108:rBIT")
+  field(INPF,"A0TST:IS_BLE_PLC2109:rBIT")
+  field(INPG,"A0TST:IS_BLE_PLC2110:rBIT")
+  field(INPH,"A0TST:IS_BLE_PLC2111:rBIT")
+  field(CALC,"A*1+B*2+C*4+D*8+E*16+F*32+G*64+H*128")
+  field(FLNK,"A0TST:IS_BLE_ROSS:Status")
+}
+record(mbbi,"A0TST:IS_BLE_ROSS:Status") {
+  field(DESC,"ROSS: Status")
+  field(SCAN,"Passive")
+  field(INP, "A0TST:IS_BLE_ROSS:calStaus")
+  field(ZRVL,"1")
+  field(ONVL,"2")
+  field(TWVL,"4")
+  field(THVL,"8")
+  field(FRVL,"16")
+  field(FVVL,"32")
+  field(SXVL,"64")
+  field(SVVL,"128")
+
+  field(ZRSV,"0")
+  field(ONSV,"0")
+  field(TWSV,"0")
+  field(THSV,"0")
+  field(FRSV,"0")
+  field(FVSV,"0")
+  field(SXSV,"0")
+  field(SVSV,"0")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_UPTRBOa:maskWRD") {
+  field(DESC,"UPTRBOa: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1000:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_UPTRBOa:calV") {
+  field(DESC,"UPTRBOa: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1000:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_UPTRBOa:Speed.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_UPTRBOb:maskWRD") {
+  field(DESC,"UPTRBOb: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1001:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_UPTRBOb:calV") {
+  field(DESC,"UPTRBOb: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1001:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_UPTRBOb:Speed.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_DNTRBOa:maskWRD") {
+  field(DESC,"DNTRBOa: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1002:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_DNTRBOa:calV") {
+  field(DESC,"DNTRBOa: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1002:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_DNTRBOa:Current.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_DNTRBOb:maskWRD") {
+  field(DESC,"DNTRBOb: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1003:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_DNTRBOb:calV") {
+  field(DESC,"DNTRBOb: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1003:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_DNTRBOb:Current.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_UPIONa:maskWRD") {
+  field(DESC,"UPIONa: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1012:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_UPIONa:calV") {
+  field(DESC,"UPIONa: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1012:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_UPIONa:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_UPIONb:maskWRD") {
+  field(DESC,"UPIONb: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1013:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_UPIONb:calV") {
+  field(DESC,"UPIONb: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1013:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_UPIONb:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_DNIONa:maskWRD") {
+  field(DESC,"DNIONa: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1014:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_DNIONa:calV") {
+  field(DESC,"DNIONa: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1014:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_DNIONa:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_DNIONb:maskWRD") {
+  field(DESC,"DNIONb: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1015:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_DNIONb:calV") {
+  field(DESC,"DNIONb: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1015:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_DNIONb:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_UPCNVa:maskWRD") {
+  field(DESC,"UPCNVa: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1016:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_UPCNVa:calV") {
+  field(DESC,"UPCNVa: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1016:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_UPCNVa:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_UPCNVb:maskWRD") {
+  field(DESC,"UPCNVb: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1017:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_UPCNVb:calV") {
+  field(DESC,"UPCNVb: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1017:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_UPCNVb:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_DNCNVa:maskWRD") {
+  field(DESC,"DNCNVa: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1018:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_DNCNVa:calV") {
+  field(DESC,"DNCNVa: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1018:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_DNCNVa:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_DNCNVb:maskWRD") {
+  field(DESC,"DNCNVb: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1019:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_DNCNVb:calV") {
+  field(DESC,"DNCNVb: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1019:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_DNCNVb:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_R1CNVa:maskWRD") {
+  field(DESC,"R1CNVa: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1020:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_R1CNVa:calV") {
+  field(DESC,"R1CNVa: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1020:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_R1CNVa:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_R1CNVb:maskWRD") {
+  field(DESC,"R1CNVb: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1021:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_R1CNVb:calV") {
+  field(DESC,"R1CNVb: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1021:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_R1CNVb:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_R2CNVa:maskWRD") {
+  field(DESC,"R2CNVa: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1022:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_R2CNVa:calV") {
+  field(DESC,"R2CNVa: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1022:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_R2CNVa:Pressure.PROC")
+}
+##############################################################################
+# Convert 16 bit integer to 0-10V output
+#
+# Written by Pierrick Hanlet, 8 December 2025
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_R2CNVb:maskWRD") {
+  field(DESC,"R2CNVb: mask rWRD")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1023:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0x00")
+  field(CALC,"(A&B)>>C")
+}
+
+record(calc,"A0TST:IS_VAC_R2CNVb:calV") {
+  field(DESC,"R2CNVb: convert to 1-10V")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_VAC_PLCR1023:rWRD")
+  field(INPB,"0xFFFFFFFF")
+  field(INPC,"0xFFFFFFFF")
+  field(INPD,"0.0")
+  field(INPE,"10.0")
+  field(CALC,"A/B*(E-D)+D")
+  field(FLNK,"A0TST:IS_VAC_R2CNVb:Pressure.PROC")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_UPIONa:Pressure") {
+  field(DESC,"UPIONa: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_UPIONa:calV PP")
+  field(INPB,"11.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_UPIONb:Pressure") {
+  field(DESC,"UPIONb: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_UPIONb:calV PP")
+  field(INPB,"11.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_DNIONa:Pressure") {
+  field(DESC,"DNIONa: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_DNIONa:calV PP")
+  field(INPB,"11.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_DNIONb:Pressure") {
+  field(DESC,"DNIONb: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_DNIONb:calV PP")
+  field(INPB,"11.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_UPCNVa:Pressure") {
+  field(DESC,"UPCNVa: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_UPCNVa:calV PP")
+  field(INPB,"4.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_UPCNVb:Pressure") {
+  field(DESC,"UPCNVb: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_UPCNVb:calV PP")
+  field(INPB,"4.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_DNCNVa:Pressure") {
+  field(DESC,"DNCNVa: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_DNCNVa:calV PP")
+  field(INPB,"4.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_DNCNVb:Pressure") {
+  field(DESC,"DNCNVb: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_DNCNVb:calV PP")
+  field(INPB,"4.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_R1CNVa:Pressure") {
+  field(DESC,"R1CNVa: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_R1CNVa:calV PP")
+  field(INPB,"4.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_R1CNVb:Pressure") {
+  field(DESC,"R1CNVb: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_R1CNVb:calV PP")
+  field(INPB,"4.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_R2CNVa:Pressure") {
+  field(DESC,"R2CNVa: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_R2CNVa:calV PP")
+  field(INPB,"4.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# Convert 0-10V Granville-Phillips input to pressure
+#
+# Written by Pierrick Hanlet, 4 March 2026
+#
+##############################################################################
+
+record(calc,"A0TST:IS_VAC_R2CNVb:Pressure") {
+  field(DESC,"R2CNVb: calibrated")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_VAC_R2CNVb:calV PP")
+  field(INPB,"4.0")
+  field(CALC,"10^(A-B)")
+  field(EGU, "torr")
+}
+##############################################################################
+# LabJack values to Sorenson channels
+#
+# Written by Pierrick Hanlet, 20 February 2026
+#
+##############################################################################
+record(calc,"A0TST:IS_BLE_FLMNT:Voltage") {
+  field(DESC,"FLMNT: voltage")
+  field(SCAN,"1 second")
+  field(INPA,"A0TST:IS_BLE_LJM:Ai0 PP")
+  field(INPB,"0.8")
+  field(CALC,"A*B")
+  field(EGU, "V")
+  field(FLNK,"A0TST:IS_BLE_FLMNT:Current.PROC")
+}
+record(calc,"A0TST:IS_BLE_FLMNT:Current") {
+  field(DESC,"FLMNT: current")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_BLE_LJM:Ai1 PP")
+  field(INPB,"35.0")
+  field(CALC,"A*B")
+  field(EGU, "A")
+}
+
+record(ao,"A0TST:IS_BLE_FLMNT:sCurrent") {
+  field(DESC,"FLMNT: set current")
+  field(DTYP,"Soft Channel")
+  field(EGU, "A")
+  field(DRVL,"0.0")
+  field(DRVH,"300.0")
+  field(FLNK,"A0TST:IS_BLE_FLMNT:setCurrent")
+}
+record(calcout,"A0TST:IS_BLE_FLMNT:setCurrent") {
+  field(DESC,"FLMNT: set current")
+  field(DTYP,"Soft Channel")
+  field(SCAN,"Passive")
+  field(INPA,"A0TST:IS_BLE_FLMNT:sCurrent")
+  field(INPB,"35.0")
+  field(CALC,"A/B")
+  field(OUT, "A0TST:IS_BLE_LJM:Ao0.VAL")
+  field(FLNK,"A0TST:IS_BLE_LJM:Ao0.PROC")
+}
